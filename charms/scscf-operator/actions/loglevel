@@ -1,0 +1,6 @@
+#!/bin/bash
+
+DEBUG=`action-get debug`
+
+kamcmd cfg.set_now_int core debug $DEBUG
+

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+USER=`action-get user`
+DOMAIN=`action-get domain`
+
+mysql -D hss_db -u root -proot -se "delete from impi where identity='$USER@$DOMAIN'"
+
+
+id_impu=$(mysql -D hss_db -u root -proot -se "select id from impu where identity='sip:$USER@$DOMAIN'")
+
+mysql -D hss_db -u root -proot -se "delete from impi_impu where id_impu=$id_impu"
+
+mysql -D hss_db -u root -proot -e "delete from impu_visited_network where id_impu=$id_impu"
+
+mysql -D hss_db -u root -proot -se "delete from impu where identity='sip:$USER@$DOMAIN'"
+
+mysql -D hss_db -u root -proot -se "delete from imsu where name='$USER'"
