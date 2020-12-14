@@ -1,0 +1,11 @@
+FROM ubuntu:18.04
+RUN  apt-get update && apt install -y mysql-client-core-5.7 subversion ant openjdk-8-jdk && mkdir -p /usr/lib/jvm && mkdir -p /opt/OpenIMSCore
+WORKDIR /opt/OpenIMSCore/
+RUN svn checkout svn://svn.code.sf.net/p/openimscore/code/FHoSS/trunk FHoSS
+WORKDIR /opt/OpenIMSCore/FHoSS
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+RUN sed -i '4d' /opt/OpenIMSCore/FHoSS/src/de/fhg/fokus/hss/sh/op/UDR.java \
+    && ant compile deploy
+
+
+

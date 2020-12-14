@@ -1,19 +1,25 @@
 # Copyright 2020 tel
 # See LICENSE file for licensing details.
+---
 name: icscf
-description: Interrogating CSCF is the entity that selects the appropriate SCSCF during registration
-summary: This component works in selecting the appropriate SCSCF for the UE during its registration process with the IMS
+description: Interrogating CSCF is the entity that
+             selects the appropriate SCSCF during registration
+summary: This component works in selecting the appropriate SCSCF
+         for the UE during its registration process with the IMS
 tags:
   - ims
 series: [kubernetes]
 deployment:
-    type: stateful
-    service: cluster
+  type: stateful
+  service: cluster
 resources:
   image:
     type: oci-image
     description: docker image for ICSCF
     # upstream-source: "10.45.5.100:4200/canonical/ims_icscf:v2.0"
 provides:
-    icscfip:
-        interface: interface
+  icscfip:
+    interface: icscfip
+requires:
+  mysql:
+    interface: mysql

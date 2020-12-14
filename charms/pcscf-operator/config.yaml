@@ -3,8 +3,10 @@
 #
 # This is only an example, and you should edit to suit your needs.
 # If you don't need config, you can remove the file entirely.
+---
 options:
-    pcscfport:
+    pcscf_port:
         type: int
-        description: 'port'
+        description: 'pcscf_port is used for TCP
+                      communication between core and ims'
         default: 4070

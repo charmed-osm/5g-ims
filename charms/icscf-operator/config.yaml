@@ -3,12 +3,10 @@
 #
 # This is only an example, and you should edit to suit your needs.
 # If you don't need config, you can remove the file entirely.
+---
 options:
-    diaport:
+    diameter_port:
         type: int
-        description: 'diameter port'
+        description: 'diameter_port is used for
+                      communication between icscf and hss'
         default: 3869
-    icscfport:
-        type: int
-        description: 'app port'
-        default: 4060

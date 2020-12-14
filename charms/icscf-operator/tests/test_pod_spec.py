@@ -1,4 +1,4 @@
-from pydantic import ValidationError
+""" test script for pod spec.py """
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -24,10 +24,8 @@ class TestPodSpec(unittest.TestCase):
                 "protocol": "TCP",
             },
         ]
-        portdict = {
-            "icscfport": 4060,
-            "diaport": 3869
-        }
+        portdict = {"diameter_port": 3869}
+        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(portdict)
 
         self.assertListEqual(expected_result, pod_ports)
@@ -36,7 +34,7 @@ class TestPodSpec(unittest.TestCase):
         """Testing make pod command"""
 
         expected_result = ["./init_icscf.sh", "&"]
-
+        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
 
@@ -48,19 +46,16 @@ class TestPodSpec(unittest.TestCase):
             "MYSQL_USER": "root",
             "MYSQL_ROOT_PASSWORD": "root",
         }
+        # pylint:disable=W0212
         pod_envconfig = pod_spec._make_pod_envconfig()
         self.assertEqual(expected_result, pod_envconfig)
 
     def test_make_pod_spec(self) -> NoReturn:
         """Teting make pod spec"""
-        image_info = {"upstream-source": "10.45.5.100:4200/canonical/ims_icscf:v4.0"}
-        config = {
-            "icscfport": 4060,
-            "diaport": 3999
-
-        }
+        image_info = {"upstream-source": "localhost:32000/ims_icscf:1.0"}
+        config = {"diameter_port": 3999}
         app_name = "icscf"
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValueError):
             pod_spec.make_pod_spec(image_info, config, app_name)
 
 

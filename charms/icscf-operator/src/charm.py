@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+""" Defining icscf charm events """
 
 import logging
-
+from typing import NoReturn
 from ops.charm import CharmBase, CharmEvents
 from ops.main import main
 from ops.framework import StoredState, EventSource, EventBase
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 from oci_image import OCIImageResource, OCIImageResourceError
-from pydantic import ValidationError
-from typing import NoReturn
 from pod_spec import make_pod_spec
 
 logger = logging.getLogger(__name__)
@@ -19,16 +18,21 @@ logger = logging.getLogger(__name__)
 class ConfigurePodEvent(EventBase):
     """Configure Pod event"""
 
-    pass
+
+class PublishIcscfEvent(EventBase):
+    """Publish Icscf event"""
 
 
 class IcscfEvents(CharmEvents):
     """ICSCF Events"""
 
     configure_pod = EventSource(ConfigurePodEvent)
+    publish_icscf_info = EventSource(PublishIcscfEvent)
 
 
 class IcscfCharm(CharmBase):
+    """ icscf charm events class definition """
+
     state = StoredState()
     on = IcscfEvents()
 
@@ -48,31 +52,87 @@ class IcscfCharm(CharmBase):
 
         # Registering custom internal events
         self.framework.observe(self.on.configure_pod, self.configure_pod)
+        self.framework.observe(self.on.publish_icscf_info, self.publish_icscf_info)
 
         # Registering required relation changed events
         self.framework.observe(
-            self.on.icscfip_relation_joined, self._publish_icscf_info
+            self.on.mysql_relation_changed, self._on_mysql_relation_changed
         )
+
+        # Registering required relation changed events
+        #    self.framework.observe(
+        #       self.on.icscfip_relation_joined, self._publish_icscf_info
+        #  )
 
         # -- initialize states --
         self.state.set_default(installed=False)
         self.state.set_default(configured=False)
         self.state.set_default(started=False)
+        self.state.set_default(mysql=None)
 
-    def _publish_icscf_info(self, event: EventBase) -> NoReturn:
-        logger.info("ICSCF Provides")
-        logger.info("***************************************")
-        if self.unit.is_leader():
+    def publish_icscf_info(self, event: EventBase) -> NoReturn:
+        """Publishes ICSCF information"""
+        logging.info(event)
+        if not self.unit.is_leader():
+            return
+
+        rel_id2 = self.model.relations.__getitem__("icscfip")
+        logging.info("REL ID2")
+        logging.info(rel_id2)
+        for i in rel_id2:
+            logging.info("inside for")
+            logging.info(i)
+            logging.info(i.id)
+            relation = self.model.get_relation("icscfip", i.id)
+            logger.info("ICSCF Provides")
+            logger.info("***************************************")
             logger.info("ICSCF IP")
-            parameter = str(self.model.get_binding(event.relation).network.bind_address)
+            parameter = str(self.model.get_binding(relation).network.bind_address)
             logger.info(parameter)
-            if parameter is not None:
-                event.relation.data[self.model.app]["parameter"] = parameter
+            if parameter != "None":
+                relation.data[self.model.app]["parameter"] = parameter
                 self.model.unit.status = ActiveStatus(
                     "Parameter sent: {}".format(parameter)
                 )
 
+    def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
+        """Reads information about the MYSQL relation.
+
+        Args:
+           event (EventBase): MYSQL relation event.
+        """
+        if event.app not in event.relation.data:
+            return
+
+        mysql = event.relation.data[event.app].get("hostname")
+        logging.info("ICSCF Requires from MYSQL")
+        logging.info(mysql)
+        if mysql and self.state.mysql != mysql:
+            self.state.mysql = mysql
+            self.on.publish_icscf_info.emit()
+            self.on.configure_pod.emit()
+
+    def _missing_relations(self) -> str:
+        """Checks if there missing relations.
+
+        Returns:
+            str: string with missing relations
+        """
+        data_status = {"mysql": self.state.mysql}
+        missing_relations = [k for k, v in data_status.items() if not v]
+        return ", ".join(missing_relations)
+
     def configure_pod(self, event: EventBase) -> NoReturn:
+        """ configure pod spec """
+        logging.info(event)
+        missing = self._missing_relations()
+        if missing:
+            self.unit.status = BlockedStatus(
+                "Waiting for {0} relation{1}".format(
+                    missing, "s" if "," in missing else ""
+                )
+            )
+            return
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
             return
@@ -93,8 +153,8 @@ class IcscfCharm(CharmBase):
                 self.model.config,
                 self.model.app.name,
             )
-        except ValidationError as exc:
-            logger.exception("Config/Relation data validation error")
+        except ValueError as exc:
+            logger.exception("Config data validation error")
             self.unit.status = BlockedStatus(str(exc))
             return
 
@@ -103,6 +163,7 @@ class IcscfCharm(CharmBase):
             self.state.pod_spec = pod_spec
 
         self.unit.status = ActiveStatus("ready")
+        self.on.publish_icscf_info.emit()
 
 
 if __name__ == "__main__":

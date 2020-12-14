@@ -1,4 +1,4 @@
-from pydantic import ValidationError
+""" test script for pod spec.py """
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -24,8 +24,9 @@ class TestPodSpec(unittest.TestCase):
             },
         ]
         portdict = {
-            "port": 53,
+            "dns_port": 53,
         }
+        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(portdict)
 
         self.assertListEqual(expected_result, pod_ports)
@@ -34,43 +35,56 @@ class TestPodSpec(unittest.TestCase):
         """Testing make pod command"""
 
         expected_result = ["./init_dns.sh", "&"]
-
+        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
+
+    def test_validate_relation_data(self) -> NoReturn:
+        """Testing validation of relation data"""
+        expected_result = True
+        relation = {
+            "pcscf": "127.0.0.1",
+            "icscf": "127.0.0.1",
+            "scscf": "127.0.0.1",
+            "hss": "127.0.0.1",
+        }
+        # pylint:disable=W0212
+        result = pod_spec._validate_relation_data(relation)
+        self.assertEqual(expected_result, result)
 
     def test_make_pod_envconfig(self) -> NoReturn:
         """Testing make pod envconfig"""
 
         expected_result = {
-            "PCSCF": "pcscf",
-            "ICSCF": "icscf",
-            "SCSCF": "scscf",
-            "HSS": "hss",
+            "PCSCF": "127.0.0.1",
+            "ICSCF": "127.0.0.1",
+            "SCSCF": "127.0.0.1",
+            "HSS": "127.0.0.1",
         }
         ipadd = {
-            "pcscf": "pcscf",
-            "icscf": "icscf",
-            "scscf": "scscf",
-            "hss": "hss",
+            "pcscf": "127.0.0.1",
+            "icscf": "127.0.0.1",
+            "scscf": "127.0.0.1",
+            "hss": "127.0.0.1",
         }
+        # pylint:disable=W0212
         pod_envconfig = pod_spec._make_pod_envconfig(ipadd)
         self.assertEqual(expected_result, pod_envconfig)
 
     def test_make_pod_spec(self) -> NoReturn:
         """Teting make pod spec"""
-        image_info = {"upstream-source": "10.45.5.100:4200/canonical/ims_dns:v4.0"}
+        image_info = {"upstream-source": "localhost:32000/ims_dns:1.0"}
         config = {
-            "port": 9999,
-
+            "dns_port": 9999,
         }
         app_name = "dns"
         relation = {
-            "pcscf": "pcscf",
-            "icscf": "icscf",
-            "scscf": "scscf",
-            "hss": "hss",
+            "pcscf": "127.0.0.1",
+            "icscf": "127.0.0.1",
+            "scscf": "127.0.0.1",
+            "hss": "127.0.0.1",
         }
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValueError):
             pod_spec.make_pod_spec(image_info, config, app_name, relation)
 
 

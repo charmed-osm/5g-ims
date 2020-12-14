@@ -1,50 +1,46 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
-
+""" Pod spec for dns charm """
 import logging
-from pydantic import BaseModel, IPvAnyAddress, validator, PositiveInt
 from typing import Any, Dict, List
+from IPy import IP
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigData(BaseModel):
-    """Configuration data model."""
-
-    port: PositiveInt = 53
-
-    @validator("port")
-    def validate_port(cls, value: int) -> Any:
-        if value == 53:
-            return value
-        raise ValueError("Invalid port number")
-
-
-class RelationData(BaseModel):
-    """Relation data model."""
-
-    pcscf: IPvAnyAddress
-    icscf: IPvAnyAddress
-    scscf: IPvAnyAddress
-    hss: IPvAnyAddress
-
-
-def _make_pod_ports(config: ConfigData) -> List[Dict[str, Any]]:
+def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
     Args:
         config Dict[str,Any]: Config details.
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    return [
-        {"name": "dnstcp", "containerPort": config["port"], "protocol": "TCP"},
-        {"name": "dnsudp", "containerPort": config["port"], "protocol": "UDP"},
-    ]
+    if config["dns_port"] == 53:
+        return [
+            {"name": "dnstcp", "containerPort": config["dns_port"], "protocol": "TCP"},
+            {"name": "dnsudp", "containerPort": config["dns_port"], "protocol": "UDP"},
+        ]
+    raise ValueError("Invalid dns_port")
+
+
+def _validate_relation_data(relation_state: Dict[str, Any]) -> bool:
+    """Validate relation data.
+    Args:
+        relation (Dict[str, Any]): relation state information.
+    Returns:
+        bool: True or False
+    """
+    if IP(relation_state["pcscf"]):
+        if IP(relation_state["icscf"]):
+            if IP(relation_state["scscf"]):
+                if IP(relation_state["hss"]):
+                    return True
+    return False
 
 
 def _make_pod_envconfig(
-    relation: RelationData,
+    relation: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Generate pod environment configuration.
     Args:
@@ -53,13 +49,15 @@ def _make_pod_envconfig(
     Returns:
         Dict[str, Any]: pod environment configuration.
     """
-    envconfig = {
-        # General configuration
-        "PCSCF": relation["pcscf"],
-        "ICSCF": relation["icscf"],
-        "SCSCF": relation["scscf"],
-        "HSS": relation["hss"],
-    }
+
+    if _validate_relation_data(relation):
+        envconfig = {
+            # General configuration
+            "PCSCF": relation["pcscf"],
+            "ICSCF": relation["icscf"],
+            "SCSCF": relation["scscf"],
+            "HSS": relation["hss"],
+        }
 
     return envconfig
 
@@ -70,7 +68,7 @@ def _make_pod_command() -> List[str]:
 
 def make_pod_spec(
     image_info: Dict[str, str],
-    config: Dict[str, Any],
+    config: Dict[str, str],
     app_name: str,
     relation: Dict[str, Any],
 ) -> Dict[str, Any]:
@@ -86,9 +84,6 @@ def make_pod_spec(
     """
     if not image_info:
         return None
-
-    ConfigData(**config)
-    RelationData(**(relation))
 
     logger.info("*******Check in pod_spec*********")
     ports = _make_pod_ports(config)

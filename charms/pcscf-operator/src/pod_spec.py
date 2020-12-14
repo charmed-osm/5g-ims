@@ -1,34 +1,27 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+""" Pod spec for pcscf charm """
 
 import logging
-from pydantic import BaseModel, validator, PositiveInt
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
+PCSCF_PORT = 4070
 
 
-class ConfigData(BaseModel):
-    """Configuration data model."""
-
-    pcscfport: PositiveInt = 4070
-
-    @validator("pcscfport")
-    def validate_pcscfport(cls, value: int) -> Any:
-        if value == 4070:
-            return value
-        raise ValueError("Invalid port number")
-
-
-def _make_pod_ports(config: ConfigData) -> List[Dict[str, Any]]:
+def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
     Args:
         Config[str, Any]: Configuration details
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    return [{"name": "pcscf", "containerPort": config["pcscfport"], "protocol": "TCP"}]
+    if config["pcscf_port"] == 4070:
+        return [
+            {"name": "pcscf", "containerPort": config["pcscf_port"], "protocol": "TCP"}
+        ]
+    raise ValueError("Invalid pcscf_port")
 
 
 def _make_pod_envconfig(model_name: str) -> Dict[str, Any]:
@@ -70,7 +63,7 @@ def _make_pod_services():
 def make_pod_spec(
     image_info: Dict[str, str],
     model_name: str,
-    config: Dict[str, Any],
+    config: Dict[str, str],
     app_name: str,
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
@@ -86,7 +79,6 @@ def make_pod_spec(
     if not image_info:
         return None
     logger.info("Pcscf pod spec")
-    ConfigData(**config)
 
     ports = _make_pod_ports(config)
     env_config = _make_pod_envconfig(model_name)

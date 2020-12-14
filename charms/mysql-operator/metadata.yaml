@@ -1,8 +1,10 @@
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+---
 name: mysql
 description: Database for storing user profile and location data.
-summary: Database for storing user profile and location data. All components in IMS connects with mysql to store and retrieve necessary details. 
+summary: Database for storing user profile and location data. All components
+         in IMS connects with mysql to store and retrieve necessary details.
 tags:
   - ims
 series: [kubernetes]
@@ -12,5 +14,8 @@ resources:
     description: docker image for MYSQL
     # upstream-source: "10.45.5.100:4200/canonical/mysql:5.7"
 deployment:
-    type: stateful
-    service: cluster
+  type: stateful
+  service: cluster
+provides:
+  mysql:
+    interface: mysql

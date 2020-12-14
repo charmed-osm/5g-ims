@@ -1,44 +1,33 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+""" Pod spec for hss charm """
 
 import logging
-from pydantic import BaseModel, validator, PositiveInt
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
-
-class ConfigData(BaseModel):
-    """Configuration data model."""
-
-    diaport: PositiveInt = 3868
-    hssport: PositiveInt = 8080
-
-    @validator("diaport")
-    def validate_diaport(cls, value: int) -> Any:
-        if value == 3868:
-            return value
-        raise ValueError("Invalid port number")
-
-    @validator("hssport")
-    def validate_hssport(cls, value: int) -> Any:
-        if value == 8080:
-            return value
-        raise ValueError("Invalid port number")
+HSS_PORT = 8080
 
 
-def _make_pod_ports(config: ConfigData) -> List[Dict[str, Any]]:
+def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
     Args:
         config Dict[str,Any]: Config details.
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    return [
-        {"name": "diahss", "containerPort": config["diaport"], "protocol": "TCP"},
-        {"name": "hss", "containerPort": config["hssport"], "protocol": "TCP"},
-    ]
+    if config["diameter_port"] == 3868:
+        return [
+            {
+                "name": "diahss",
+                "containerPort": config["diameter_port"],
+                "protocol": "TCP",
+            },
+            {"name": "hss", "containerPort": HSS_PORT, "protocol": "TCP"},
+        ]
+    raise ValueError("Invalid diameter_port")
 
 
 def _make_pod_envconfig() -> Dict[str, Any]:
@@ -62,7 +51,7 @@ def _make_pod_command() -> List[str]:
 
 def make_pod_spec(
     image_info: Dict[str, str],
-    config: Dict[str, Any],
+    config: Dict[str, str],
     app_name: str,
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
@@ -76,8 +65,6 @@ def make_pod_spec(
     """
     if not image_info:
         return None
-
-    ConfigData(**config)
 
     ports = _make_pod_ports(config)
     env_config = _make_pod_envconfig()

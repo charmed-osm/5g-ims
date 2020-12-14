@@ -1,0 +1,22 @@
+#!/bin/bash
+
+USER=`action-get user`
+PASSWORD=`action-get password`
+DOMAIN=`action-get domain`
+IMPLICIT=`action-get implicit`
+mysql -D hss_db -u root -proot -e "INSERT INTO impu(identity, type, barring, user_state, id_sp, id_implicit_set, id_charging_info, wildcard_psi, display_name, psi_activation, can_register) VALUES ('sip:$USER@$DOMAIN',0,0,1,1,$IMPLICIT,1,'','',0,1)"
+mysql -D hss_db -u root -proot -e "INSERT INTO imsu (name, scscf_name, diameter_name, id_capabilities_set, id_preferred_scscf_set)VALUES ('$USER','sip:scscf.$DOMAIN:4080','scscf.$DOMAIN',1,1)"
+
+id_imsu=$(mysql -D hss_db -u root -proot -se "select id from imsu where name='$USER'")
+
+
+mysql -D hss_db -u root -proot -e "INSERT INTO impi(id_imsu, identity, k, auth_scheme, default_auth_scheme, amf, op, sqn, ip, line_identifier, zh_uicc_type, zh_key_life_time, zh_default_auth_scheme) VALUES ($id_imsu,'$USER@$DOMAIN','$PASSWORD',127,1,'\0\0','\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0','000000000000','','',0,3600,1)"
+
+id_impi=$(mysql -D hss_db -u root -proot -se "select id from impi where identity='$USER@$DOMAIN'")
+
+id_impu=$(mysql -D hss_db -u root -proot -se "select id from impu where identity='sip:$USER@$DOMAIN'")
+
+
+mysql -D hss_db -u root -proot -e "INSERT INTO impi_impu(id_impi, id_impu, user_state) VALUES ($id_impi,$id_impu,1)"
+
+mysql -D hss_db -u root -proot -e "INSERT INTO impu_visited_network (id_impu, id_visited_network)VALUES ($id_impu,1)"

@@ -3,8 +3,9 @@
 #
 # This is only an example, and you should edit to suit your needs.
 # If you don't need config, you can remove the file entirely.
+---
 options:
-    port:
+    dns_port:
         type: int
-        description: 'Port'
+        description: 'dns_port is exposed for custom dns server in ims'
         default: 53

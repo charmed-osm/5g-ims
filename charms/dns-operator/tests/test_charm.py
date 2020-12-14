@@ -1,15 +1,19 @@
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
-
+""" dns test script for charm.py """
 import unittest
+
 # from unittest.mock import Mock
 from typing import NoReturn
 from ops.model import BlockedStatus
 from ops.testing import Harness
+
 from charm import DnsCharm
 
 
 class TestCharm(unittest.TestCase):
+    """ Test script for checking relations """
+
     def setUp(self) -> NoReturn:
         """Test setup"""
         self.harness = Harness(DnsCharm)
@@ -32,7 +36,6 @@ class TestCharm(unittest.TestCase):
     def test_on_start_with_relations(self) -> NoReturn:
         """Test installation with any relation."""
         self.harness.charm.on.start.emit()
-        # Check if pcscf,icscf,scscf,hss is initialized
         self.assertIsNone(self.harness.charm.state.pcscf)
         self.assertIsNone(self.harness.charm.state.icscf)
         self.assertIsNone(self.harness.charm.state.scscf)
@@ -75,7 +78,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("pcscfip", "pcscfip")
         self.harness.add_relation_unit(relation_id, "pcscfip/0")
         self.harness.update_relation_data(
-            relation_id, "pcscfip", {"host": "pcscfip"}
+            relation_id, "pcscfip", {"parameter": "pcscfip"}
         )
 
         # Verifying status
@@ -96,7 +99,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("icscfip", "icscfip")
         self.harness.add_relation_unit(relation_id, "icscfip/0")
         self.harness.update_relation_data(
-            relation_id, "icscfip", {"host": "icscfip"}
+            relation_id, "icscfip", {"parameter": "icscfip"}
         )
 
         # Verifying status
@@ -117,7 +120,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("scscfip", "scscfip")
         self.harness.add_relation_unit(relation_id, "scscfip/0")
         self.harness.update_relation_data(
-            relation_id, "scscfip", {"host": "scscfip"}
+            relation_id, "scscfip", {"parameter": "scscfip"}
         )
 
         # Verifying status
@@ -137,9 +140,7 @@ class TestCharm(unittest.TestCase):
 
         relation_id = self.harness.add_relation("hssip", "hssip")
         self.harness.add_relation_unit(relation_id, "hssip/0")
-        self.harness.update_relation_data(
-            relation_id, "hssip", {"host": "hssip"}
-        )
+        self.harness.update_relation_data(relation_id, "hssip", {"parameter": "hssip"})
 
         # Verifying status
         self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)

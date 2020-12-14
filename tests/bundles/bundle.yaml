@@ -1,4 +1,5 @@
-description: IMS Bundle
+---
+description: IMS Bundle for Functional Testing
 bundle: kubernetes
 applications:
   mysql:
@@ -11,38 +12,46 @@ applications:
     charm: '../../charms/hss-operator/hss.charm'
     scale: 1
     resources:
-      image: '10.45.5.100:4200/canonical/ims_hss:v4.0'
+      image: 'localhost:32000/ims_hss:1.0'
 
   dns:
     charm: '../../charms/dns-operator/dns.charm'
     scale: 1
     resources:
-      image: '10.45.5.100:4200/canonical/ims_dns:v4.0'
+      image: 'localhost:32000/ims_dns:1.0'
 
   icscf:
     charm: '../../charms/icscf-operator/icscf.charm'
     scale: 1
     resources:
-      image: '10.45.5.100:4200/canonical/ims_icscf:v4.0'
+      image: 'localhost:32000/ims_icscf:1.0'
 
   pcscf:
     charm: '../../charms/pcscf-operator/pcscf.charm'
     scale: 1
     resources:
-      image: '10.45.5.100:4200/canonical/ims_pcscf:v4.0'
+      image: 'localhost:32000/ims_pcscf:1.0'
 
   scscf:
     charm: '../../charms/scscf-operator/scscf.charm'
     scale: 1
     resources:
-      image: '10.45.5.100:4200/canonical/ims_scscf:v4.0'
+      image: 'localhost:32000/ims_scscf:1.0'
 
 relations:
-- - hss:hssip
-  - dns:hssip
-- - icscf:icscfip
-  - dns:icscfip
-- - pcscf:pcscfip
-  - dns:pcscfip
-- - scscf:scscfip
-  - dns:scscfip
+  - - mysql:mysql
+    - hss:mysql
+  - - mysql:mysql
+    - pcscf:mysql
+  - - mysql:mysql
+    - scscf:mysql
+  - - mysql:mysql
+    - icscf:mysql
+  - - hss:hssip
+    - dns:hssip
+  - - icscf:icscfip
+    - dns:icscfip
+  - - pcscf:pcscfip
+    - dns:pcscfip
+  - - scscf:scscfip
+    - dns:scscfip

@@ -1,0 +1,70 @@
+FROM ubuntu:18.04
+
+
+RUN apt-get -y update && apt-get install -y git-core flex bison gcc g++ libmysqlclient-dev make autoconf libssl-dev \
+    && apt-get install -y libcurl4-openssl-dev libxml2-dev libpcre3-dev libmnl-dev libsctp-dev libevent-dev\
+    && mkdir -p /usr/local/src/kamailio 
+
+ENV PWD=/usr/local/src
+WORKDIR ${PWD}
+
+RUN git clone https://github.com/kamailio/kamailio kamailio && cd kamailio && git checkout tags/5.3.7 -b 5.3 && make cfg \
+    && make include_modules="cdp cdp_avp db_mysql dialplan ims_auth ims_charging ims_dialog ims_diameter_server ims_icscf ims_ipsec_pcscf ims_isc ims_ocs ims_qos ims_registrar_pcscf ims_registrar_scscf ims_usrloc_pcscf ims_usrloc_scscf outbound presence presence_conference presence_dialoginfo presence_mwi presence_profile presence_reginfo presence_xml pua pua_bla pua_dialoginfo pua_reginfo pua_rpc pua_usrloc pua_xmpp sctp tls utils xcap_client xcap_server xmlops xmlrpc http_async_client http_client" cfg \
+   && make Q=0 all | tee make_all.txt && make install | tee make_install.txt
+
+ENV CONFIG_PWD=/usr/local/src/kamailio/misc/examples/ims
+ENV PCSCF=pcscf
+ENV ICSCF=icscf
+ENV SCSCF=scscf
+ENV kamailio=kamailio
+
+WORKDIR ${CONFIG_PWD}
+
+
+RUN for cfg in pcscf icscf scscf; do \
+        echo "$cfg"; \
+        mv $cfg/dispatcher.list.sample $cfg/dispatcher.list; \
+        mv $cfg/$cfg.cfg.sample $cfg/$cfg.cfg; \
+        mv $cfg/$cfg.xml.sample $cfg/$cfg.xml; \
+        sed -i '/tcp:/s/^#//g' $cfg/$cfg.cfg; \
+	sed -Ei "s/0.0.0.0|11.22.33.44/$cfg-endpoints/g" $cfg/$cfg.cfg; \
+	sed -i "s/heslo@127.0.0.1/heslo@mysql-endpoints/g" $cfg/$cfg.cfg; \
+	sed -Ei "s/children=16|children=64|children=12/children=4/g" $cfg/${kamailio}.cfg; \
+	sed -i "s/\/\"/\/:\/usr\/local\/lib64\/kamailio\/modules\/\"/g" $cfg/${kamailio}.cfg; \
+	sed -i "s/\/var\/run\/kamailio_$cfg/\/var\/run\/kamailio/g" $cfg/${kamailio}.cfg; \
+    done;
+
+
+WORKDIR ${CONFIG_PWD}/${PCSCF}
+
+RUN sed -e '/ipsec/s/^/#/g' -i route/mo.cfg \
+    && mv tls.cfg.sample tls.cfg \
+    && echo "#!define WITH_PING_UDP" >> ${PCSCF}.cfg \
+    && echo "#!define WITH_PING_TCP" >> ${PCSCF}.cfg \
+    && echo "#!define WITH_TCP" >> ${PCSCF}.cfg \
+    && sed -i '/tcp:/s/$/ advertise lbip:4070/' ${PCSCF}.cfg \
+    && sed -i "/^dns_srv_lb/a use_dns_cache=no" ${kamailio}.cfg \
+    && sed -e '/modparam(\"rtpengine\"/s/^/#/g' -i ${kamailio}.cfg \
+    && sed -e '/ipsec_destroy/s/^/#/g' -i ${kamailio}.cfg \
+    && sed -e '/pcscf_unregister/s/^/#/g' -i ${kamailio}.cfg \
+    && sed -i "s/5060/4070/g" *.cfg \
+    && sed -i '11,14 s/^/#/' route/mo.cfg
+
+WORKDIR ${CONFIG_PWD}/${ICSCF}
+
+RUN sed -Ei "s/ims.|con1=>//g" ${ICSCF}.* \
+    && sed -i '241,243 s/^/#/' ${kamailio}.cfg \
+    && echo "#!define WITH_TCP" >> ${ICSCF}.cfg
+
+WORKDIR ${CONFIG_PWD}/${SCSCF}
+
+RUN sed -Ei "s/ims.//g" ${SCSCF}.* \
+    && sed -i '22 s/^#//g' ${SCSCF}.cfg \
+    && echo "#!define WITH_TCP" >> ${SCSCF}.cfg \
+    && sed -i '/WITH_AUTH/s/^#//g' ${SCSCF}.cfg \
+    && sed -i "/^#!define NETWORKNAME/a #!define NETWORKNAME_ESC \"mnc001\\\.mcc001\\\.3gppnetwork\\\.org\"" ${SCSCF}.cfg \
+    && sed -e '/avp(DISPATCHER/s/^/#/g' -i ${kamailio}.cfg \
+    && sed -i '434 s/*\"/*\" || uri=~"sip:(.*)@"+NETWORKNAME_ESC +"(.*)"/' ${kamailio}.cfg
+  
+RUN echo "SIP_DOMAIN=mnc001.mcc001.3gppnetwork.org" >> /usr/local/etc/kamailio/kamctlrc \
+    && echo "DBENGINE=MYSQL"  >> /usr/local/etc/kamailio/kamctlrc

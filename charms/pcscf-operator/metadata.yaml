@@ -1,19 +1,24 @@
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+---
 name: pcscf
 description: pcscf-operator charm does the function of proxy-cscf for IMS
-summary: pcscf-operator charm does the function of proxy-cscf for IMS. This stands as the entry and exit to any request to IMS
+summary: pcscf-operator charm does the function of proxy-cscf for IMS.
+         This stands as the entry and exit to any request to IMS
 tags:
   - ims
 deployment:
-    type: stateful
-    service: loadbalancer
+  type: stateful
+  service: loadbalancer
 series: [kubernetes]
 resources:
   image:
     type: oci-image
     description: docker image for PCSCF
-    #upstream-source: "10.45.5.100:4200/canonical/ims_pcscf:v4.0"
+    # upstream-source: "10.45.5.100:4200/canonical/ims_pcscf:v4.0"
 provides:
-    pcscfip:
-        interface: interface
+  pcscfip:
+    interface: pcscfip
+requires:
+  mysql:
+    interface: mysql

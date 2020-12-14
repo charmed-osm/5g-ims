@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
-
+""" Defining dns charm events """
 import logging
+from typing import Any, Dict, NoReturn
 from ops.charm import CharmBase, CharmEvents
 from ops.main import main
 from ops.framework import StoredState, EventBase, EventSource
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
 from oci_image import OCIImageResource, OCIImageResourceError
-from pydantic import ValidationError
-from typing import Any, Dict, NoReturn
 from pod_spec import make_pod_spec
 
 logger = logging.getLogger(__name__)
@@ -17,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 class ConfigurePodEvent(EventBase):
     """Configure Pod event"""
-
-    pass
 
 
 class DnsEvents(CharmEvents):
@@ -28,6 +25,8 @@ class DnsEvents(CharmEvents):
 
 
 class DnsCharm(CharmBase):
+    """ DNS charm events class definition """
+
     state = StoredState()
     on = DnsEvents()
 
@@ -42,6 +41,8 @@ class DnsCharm(CharmBase):
         self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
         self.framework.observe(self.on.upgrade_charm, self.configure_pod)
+        self.framework.observe(self.on.leader_elected, self.configure_pod)
+        self.framework.observe(self.on.update_status, self.configure_pod)
 
         # Registering custom internal events
         self.framework.observe(self.on.configure_pod, self.configure_pod)
@@ -71,77 +72,77 @@ class DnsCharm(CharmBase):
 
     def _on_hssip_relation_changed(self, event: EventBase) -> NoReturn:
         try:
-            logger.info(
-                "RELATION DATA: {}".format(dict(event.relation.data[event.app]))
-            )
-            parameter = event.relation.data[event.app].get("parameter")
-            self.state.hss = event.relation.data[event.app].get("parameter")
-            logger.info("global hss ip : {}".format(self.state.hss))
-            if parameter is not None:
-                logger.info("Parameter hss received: {}".format(parameter))
-                self.unit.status = ActiveStatus(
-                    "Parameter received: {}".format(parameter)
-                )
-                self.on.configure_pod.emit()
+            rel_id2 = self.model.relations.__getitem__("hssip")
+            for i in rel_id2:
+                relation = self.model.get_relation("hssip", i.id)
+                parameter = relation.data[event.app].get("parameter")
+                if parameter != "None":
+                    self.state.hss = relation.data[event.app].get("parameter")
+                    logger.info("global hss ip : %s", self.state.hss)
+                    logger.info("Parameter hss received: %s", parameter)
+                    self.unit.status = ActiveStatus(
+                        "Parameter received: {}".format(parameter)
+                    )
+                    self.on.configure_pod.emit()
         except KeyError as err:
-            logger.error("Key error in hss relation data: {}".format(str(err)))
+            logger.error("Key error in hss relation data: %s", str(err))
             self.unit.status = BlockedStatus("hss ip not obtained")
             return
 
     def _on_icscfip_relation_changed(self, event: EventBase) -> NoReturn:
         try:
-            logger.info(
-                "RELATION DATA: {}".format(dict(event.relation.data[event.app]))
-            )
-            parameter = event.relation.data[event.app].get("parameter")
-            self.state.icscf = event.relation.data[event.app].get("parameter")
-            logger.info("global icscf ip : {}".format(self.state.icscf))
-            if parameter is not None:
-                logger.info("Parameter icscf received: {}".format(parameter))
-                self.unit.status = ActiveStatus(
-                    "Parameter received: {}".format(parameter)
-                )
-                self.on.configure_pod.emit()
+            rel_id2 = self.model.relations.__getitem__("icscfip")
+            for i in rel_id2:
+                relation = self.model.get_relation("icscfip", i.id)
+                parameter = relation.data[event.app].get("parameter")
+                if parameter != "None":
+                    self.state.icscf = relation.data[event.app].get("parameter")
+                    logger.info("global icscf ip : %s", self.state.icscf)
+                    logger.info("Parameter icscf received: %s", parameter)
+                    self.unit.status = ActiveStatus(
+                        "Parameter received: {}".format(parameter)
+                    )
+                    self.on.configure_pod.emit()
         except KeyError as err:
-            logger.error("Key error in icscf relation data: {}".format(str(err)))
+            logger.error("Key error in icscf relation data: %s", str(err))
             self.unit.status = BlockedStatus("icscf ip not obtained")
             return
 
     def _on_pcscfip_relation_changed(self, event: EventBase) -> NoReturn:
         try:
-            logger.info(
-                "RELATION DATA: {}".format(dict(event.relation.data[event.app]))
-            )
-            parameter = event.relation.data[event.app].get("parameter")
-            self.state.pcscf = event.relation.data[event.app].get("parameter")
-            logger.info("global pcscf ip : {}".format(self.state.pcscf))
-            if parameter is not None:
-                logger.info("Parameter pcscf received: {}".format(parameter))
-                self.unit.status = ActiveStatus(
-                    "Parameter received: {}".format(parameter)
-                )
-                self.on.configure_pod.emit()
+            rel_id2 = self.model.relations.__getitem__("pcscfip")
+            for i in rel_id2:
+                relation = self.model.get_relation("pcscfip", i.id)
+                parameter = relation.data[event.app].get("parameter")
+                if parameter != "None":
+                    self.state.pcscf = relation.data[event.app].get("parameter")
+                    logger.info("global pcscf ip : %s", self.state.pcscf)
+                    logger.info("Parameter pcscf received: %s", parameter)
+                    self.unit.status = ActiveStatus(
+                        "Parameter received: {}".format(parameter)
+                    )
+                    self.on.configure_pod.emit()
         except KeyError as err:
-            logger.error("Key error in pcscf relation data: {}".format(str(err)))
+            logger.error("Key error in pcscf relation data: %s", str(err))
             self.unit.status = BlockedStatus("pcscf ip not obtained")
             return
 
     def _on_scscfip_relation_changed(self, event: EventBase) -> NoReturn:
         try:
-            logger.info(
-                "RELATION DATA: {}".format(dict(event.relation.data[event.app]))
-            )
-            parameter = event.relation.data[event.app].get("parameter")
-            self.state.scscf = event.relation.data[event.app].get("parameter")
-            logger.info("global scscf ip : {}".format(self.state.scscf))
-            if parameter is not None:
-                logger.info("Parameter scscf received: {}".format(parameter))
-                self.unit.status = ActiveStatus(
-                    "Parameter received: {}".format(parameter)
-                )
-                self.on.configure_pod.emit()
+            rel_id2 = self.model.relations.__getitem__("scscfip")
+            for i in rel_id2:
+                relation = self.model.get_relation("scscfip", i.id)
+                parameter = relation.data[event.app].get("parameter")
+                if parameter != "None":
+                    self.state.scscf = relation.data[event.app].get("parameter")
+                    logger.info("global scscf ip : %s", self.state.scscf)
+                    logger.info("Parameter scscf received: %s", parameter)
+                    self.unit.status = ActiveStatus(
+                        "Parameter received: {}".format(parameter)
+                    )
+                    self.on.configure_pod.emit()
         except KeyError as err:
-            logger.error("Key error in scscf relation data: {}".format(str(err)))
+            logger.error("Key error in scscf relation data: %s", str(err))
             self.unit.status = BlockedStatus("scscf ip not obtained")
             return
 
@@ -161,7 +162,7 @@ class DnsCharm(CharmBase):
         return ", ".join(missing_relations)
 
     def combined_ip(self) -> Dict[str, Any]:
-        logger.info("Combined ip relations...................")
+        """ Combined ip relations """
         ip_addresses = {
             "hss": self.state.hss,
             "icscf": self.state.icscf,
@@ -171,6 +172,12 @@ class DnsCharm(CharmBase):
         return ip_addresses
 
     def configure_pod(self, event: EventBase) -> NoReturn:
+        """Assemble the pod spec and apply it, if possible.
+        Args:
+            event (EventBase): Hook or Relation event that started the
+                               function.
+        """
+        logging.info(event)
         missing = self._missing_relations()
         if missing:
             self.unit.status = BlockedStatus(
@@ -194,16 +201,16 @@ class DnsCharm(CharmBase):
             self.unit.status = BlockedStatus("Error fetching image information")
             return
 
+        relation = self.combined_ip()
+        logger.info("pod spec call.............")
         try:
-            relation = self.combined_ip()
-            logger.info("pod spec call.............")
             pod_spec = make_pod_spec(
                 image_info,
                 self.model.config,
                 self.model.app.name,
                 relation,
             )
-        except ValidationError as exc:
+        except ValueError as exc:
             logger.exception("Config/Relation data validation error")
             self.unit.status = BlockedStatus(str(exc))
             return

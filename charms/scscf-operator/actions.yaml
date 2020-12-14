@@ -4,12 +4,13 @@
 # This is only an example, and you should edit to suit your needs.
 # If you don't need actions, you can remove the file entirely.
 # It ties in to the example _on_fortune_action handler in src/charm.py
-loglevel:
+---
+log-level:
     description: "Changing debug level"
     params:
         debug:
             description: "debug level change"
             type: integer
             default: ""
-debuglevel:
+debug-level:
     description: "Changing debug level"

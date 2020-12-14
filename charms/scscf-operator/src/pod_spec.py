@@ -1,44 +1,32 @@
 #!/usr/bin/env python3
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+""" scscf charm events class definition """
 
 import logging
-from pydantic import BaseModel, validator, PositiveInt
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
+SCSCF_PORT = 6060
 
 
-class ConfigData(BaseModel):
-    """Configuration data model."""
-
-    diaport: PositiveInt = 3870
-    scscfport: PositiveInt = 6060
-
-    @validator("diaport")
-    def validate_diaport(cls, value: int) -> Any:
-        if value == 3870:
-            return value
-        raise ValueError("Invalid port number")
-
-    @validator("scscfport")
-    def validate_scscfport(cls, value: int) -> Any:
-        if value == 6060:
-            return value
-        raise ValueError("Invalid port number")
-
-
-def _make_pod_ports(config: ConfigData) -> List[Dict[str, Any]]:
+def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
     Args:
         config (Dict[str, Any]): configuration information.
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    return [
-        {"name": "diascscf", "containerPort": config["diaport"], "protocol": "TCP"},
-        {"name": "scscf", "containerPort": config["scscfport"], "protocol": "TCP"},
-    ]
+    if config["diameter_port"] == 3870:
+        return [
+            {
+                "name": "diascscf",
+                "containerPort": config["diameter_port"],
+                "protocol": "TCP",
+            },
+            {"name": "scscf", "containerPort": SCSCF_PORT, "protocol": "TCP"},
+        ]
+    raise ValueError("Invalid diameter_port")
 
 
 def _make_pod_envconfig() -> Dict[str, Any]:
@@ -62,7 +50,7 @@ def _make_pod_command() -> List[str]:
 
 def make_pod_spec(
     image_info: Dict[str, str],
-    config: Dict[str, Any],
+    config: Dict[str, str],
     app_name: str = "scscf",
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
@@ -76,8 +64,6 @@ def make_pod_spec(
     """
     if not image_info:
         return None
-
-    ConfigData(**config)
 
     ports = _make_pod_ports(config)
     env_config = _make_pod_envconfig()

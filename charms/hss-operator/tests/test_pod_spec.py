@@ -1,4 +1,4 @@
-from pydantic import ValidationError
+""" test script for pod spec.py """
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -9,26 +9,23 @@ class TestPodSpec(unittest.TestCase):
 
     def test_make_pod_ports(self) -> NoReturn:
         """Testing make pod ports."""
-        port = 8080
-        diaport = 3868
+        hss_port = 8080
+        diameter_port = 3868
 
         expected_result = [
             {
                 "name": "diahss",
-                "containerPort": diaport,
+                "containerPort": diameter_port,
                 "protocol": "TCP",
             },
             {
                 "name": "hss",
-                "containerPort": port,
+                "containerPort": hss_port,
                 "protocol": "TCP",
             },
         ]
-        portdict = {
-            "hssport": 8080,
-            "diaport": 3868
-        }
-        pod_ports = pod_spec._make_pod_ports(portdict)
+        dict_port = {"diameter_port": 3868}
+        pod_ports = pod_spec._make_pod_ports(dict_port)
 
         self.assertListEqual(expected_result, pod_ports)
 
@@ -53,14 +50,10 @@ class TestPodSpec(unittest.TestCase):
 
     def test_make_pod_spec(self) -> NoReturn:
         """Teting make pod spec"""
-        image_info = {"upstream-source": "10.45.5.100:4200/canonical/ims_hss:v4.0"}
-        config = {
-            "hssport": 8080,
-            "diaport": 9999
-
-        }
+        image_info = {"upstream-source": "localhost:32000/ims_hss:1.0"}
+        config = {"diameter_port": 3998}
         app_name = "hss"
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(ValueError):
             pod_spec.make_pod_spec(image_info, config, app_name)
 
 

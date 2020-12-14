@@ -1,9 +1,10 @@
 # Copyright 2020 TataElxsi
 # See LICENSE file for licensing details.
+---
 name: dns
 description: Custom DNS server used for communication between IMS components
 summary: DNS used for communication between IMS components.
-tags: 
+tags:
   - ims
 series: [kubernetes]
 resources:
@@ -11,16 +12,14 @@ resources:
     type: oci-image
     description: docker image for DNS
 deployment:
-    type: stateful
-    service: cluster
+  type: stateful
+  service: cluster
 requires:
   hssip:
-     interface: interface
+    interface: hssip
   icscfip:
-     interface: interface
+    interface: icscfip
   pcscfip:
-     interface: interface
+    interface: pcscfip
   scscfip:
-     interface: interface
-
-
+    interface: scscfip
