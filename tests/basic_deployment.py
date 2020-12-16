@@ -10,20 +10,25 @@ import logging
 import zaza.model as model
 import pymysql
 
+
 class BasicDeployment(unittest.TestCase):
     """ class defines functional testing of ims charms """
+
     def create_connection(self):
         """ creating mysqldb connection """
         try:
-            for unit in model.get_units('mysql'):
+            for unit in model.get_units("mysql"):
                 logging.info("Checking if the unit db is active: %s", unit.entity_id)
                 logging.info("checking for mysql db connection ......")
-                db_ip = model.get_status().applications["mysql"]["units"][unit.entity_id]["address"]
-                myclient = pymysql.connect(db_ip,"root","root","hss_db" )
+                db_ip = model.get_status().applications["mysql"]["units"][
+                    unit.entity_id
+                ]["address"]
+                myclient = pymysql.connect(db_ip, "root", "root", "hss_db")
                 logging.info("Mysqldb connected successfully !!!")
         except pymysql.Error:
             logging.info("Could not connect to Mysqldb")
         return myclient
+
     def mysql_read_data(self, db_client, identity):
         """ Reading data from mysqldb """
         statement = "select * from impi where identity = %s"
@@ -96,39 +101,45 @@ class BasicDeployment(unittest.TestCase):
 
     def test4_tcp_pcscf_connection(self):
         """ ***** Checking pcscf TCP connection ***** """
-        for unit in model.get_units('pcscf'):
+        for unit in model.get_units("pcscf"):
             logging.info("Checking if the unit pcscf is active: %s", unit.entity_id)
-            pcscf_ip = model.get_status().applications["pcscf"]["units"][unit.entity_id]["address"]
+            pcscf_ip = model.get_status().applications["pcscf"]["units"][
+                unit.entity_id
+            ]["address"]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex((pcscf_ip,4070))
+            result = sock.connect_ex((pcscf_ip, 4070))
             if result == 0:
                 logging.info("pcscf unit has TCP connection Established!!")
-                self.assertEqual(0,result)
+                self.assertEqual(0, result)
             else:
                 logging.info("Failed to connect")
 
     def test5_tcp_icscf_connection(self):
         """ ***** Checking icscf TCP connection ***** """
-        for unit in model.get_units('icscf'):
+        for unit in model.get_units("icscf"):
             logging.info("Checking if the unit icscf is active: %s", unit.entity_id)
-            icscf_ip = model.get_status().applications["icscf"]["units"][unit.entity_id]["address"]
+            icscf_ip = model.get_status().applications["icscf"]["units"][
+                unit.entity_id
+            ]["address"]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex((icscf_ip,4060))
+            result = sock.connect_ex((icscf_ip, 4060))
             if result == 0:
                 logging.info("icscf unit has TCP connection Established!!")
-                self.assertEqual(0,result)
+                self.assertEqual(0, result)
             else:
                 logging.info("Failed to connect")
 
     def test6_tcp_scscf_connection(self):
         """ ***** Checking scscf TCP connection ***** """
-        for unit in model.get_units('scscf'):
+        for unit in model.get_units("scscf"):
             logging.info("Checking if the unit scscf is active: %s", unit.entity_id)
-            scscf_ip = model.get_status().applications["scscf"]["units"][unit.entity_id]["address"]
+            scscf_ip = model.get_status().applications["scscf"]["units"][
+                unit.entity_id
+            ]["address"]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex((scscf_ip,6060))
+            result = sock.connect_ex((scscf_ip, 6060))
             if result == 0:
                 logging.info("scscf unit has TCP connection Established!!")
-                self.assertEqual(0,result)
+                self.assertEqual(0, result)
             else:
                 logging.info("Failed to connect")

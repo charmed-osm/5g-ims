@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Tata Elxsi
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,6 +18,22 @@
 #
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
-##
-zaza @ git+https://github.com/openstack-charmers/zaza.git@08bdb4e259d03791993dd36559c0e19e70f48418
-PyMySQL
+
+osm package-create vnf ims
+osm package-create ns ims
+
+charms="dns-operator hss-operator icscf-operator mysql-operator pcscf-operator scscf-operator"
+
+
+for charm_directory in $charms; do
+    mkdir -p "ims_vnf/charms/$charm_directory" && \
+    cp -rf ../charms/$charm_directory/build "ims_vnf/charms/$charm_directory"
+done
+
+mkdir -p "ims_vnf/juju-bundles" && cp bundle.yaml "ims_vnf/juju-bundles"
+
+cp ims_vnfd.yaml "ims_vnf/"
+cp ims_nsd.yaml "ims_ns/"
+
+tar -cvzf ims_vnf.tar.gz ims_vnf/
+tar -cvzf ims_ns.tar.gz ims_ns/

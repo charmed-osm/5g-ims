@@ -5,7 +5,7 @@ PASSWORD=`action-get password`
 DOMAIN=`action-get domain`
 IMPLICIT=`action-get implicit`
 mysql -D hss_db -u root -proot -e "INSERT INTO impu(identity, type, barring, user_state, id_sp, id_implicit_set, id_charging_info, wildcard_psi, display_name, psi_activation, can_register) VALUES ('sip:$USER@$DOMAIN',0,0,1,1,$IMPLICIT,1,'','',0,1)"
-mysql -D hss_db -u root -proot -e "INSERT INTO imsu (name, scscf_name, diameter_name, id_capabilities_set, id_preferred_scscf_set)VALUES ('$USER','sip:scscf.$DOMAIN:4080','scscf.$DOMAIN',1,1)"
+mysql -D hss_db -u root -proot -e "INSERT INTO imsu (name, scscf_name, diameter_name, id_capabilities_set, id_preferred_scscf_set)VALUES ('$USER','sip:scscf.$DOMAIN:6060','scscf.$DOMAIN',1,1)"
 
 id_imsu=$(mysql -D hss_db -u root -proot -se "select id from imsu where name='$USER'")
 
