@@ -46,6 +46,7 @@ class TestPodSpec(unittest.TestCase):
             },
         ]
         dict_port = {"diameter_port": 3868}
+        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(dict_port)
 
         self.assertListEqual(expected_result, pod_ports)
@@ -54,7 +55,7 @@ class TestPodSpec(unittest.TestCase):
         """Testing make pod command"""
 
         expected_result = ["./init_hss.sh", "&"]
-
+        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
 
@@ -66,6 +67,7 @@ class TestPodSpec(unittest.TestCase):
             "MYSQL_USER": "root",
             "MYSQL_ROOT_PASSWORD": "root",
         }
+        # pylint:disable=W0212
         pod_envconfig = pod_spec._make_pod_envconfig()
         self.assertEqual(expected_result, pod_envconfig)
 

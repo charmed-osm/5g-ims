@@ -91,19 +91,24 @@ class HssCharm(CharmBase):
         if not self.unit.is_leader():
             return
 
-        rel_id2 = self.model.relations.__getitem__("hssip")
-        logging.info("REL ID2")
-        logging.info(rel_id2)
-        for i in rel_id2:
-            relation = self.model.get_relation("hssip", i.id)
-            logger.info("HSS Provides")
-            parameter = str(self.model.get_binding(relation).network.bind_address)
-            logger.info(parameter)
-            if parameter != "None":
-                relation.data[self.model.app]["parameter"] = parameter
-                self.model.unit.status = ActiveStatus(
-                    "Parameter sent: {}".format(parameter)
-                )
+        try:
+            rel_id2 = self.model.relations.__getitem__("hssip")
+            logging.info("REL ID2")
+            logging.info(rel_id2)
+            for i in rel_id2:
+                relation = self.model.get_relation("hssip", i.id)
+                logger.info("HSS Provides")
+                parameter = str(self.model.get_binding(relation).network.bind_address)
+                logger.info(parameter)
+                if parameter != "None":
+                    relation.data[self.model.app]["parameter"] = parameter
+                    self.model.unit.status = ActiveStatus(
+                        "Parameter sent: {}".format(parameter)
+                    )
+        except Exception as err:
+            logger.error("Error in hss relation data: %s", str(err))
+            self.unit.status = BlockedStatus("Ip could not be obtained")
+            return
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.

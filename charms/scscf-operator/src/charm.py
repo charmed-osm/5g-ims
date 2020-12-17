@@ -89,21 +89,26 @@ class ScscfCharm(CharmBase):
         self.state.set_default(mysql=None)
 
     def publish_scscf_info(self, event: EventBase) -> NoReturn:
-        """Publishes ICSCF information"""
+        """Publishes SCSCF information"""
         logging.info(event)
         if not self.unit.is_leader():
             return
 
-        rel_id2 = self.model.relations.__getitem__("scscfip")
-        for i in rel_id2:
-            relation = self.model.get_relation("scscfip", i.id)
-            parameter = str(self.model.get_binding(relation).network.bind_address)
-            logger.info(parameter)
-            if parameter != "None":
-                relation.data[self.model.app]["parameter"] = parameter
-                self.model.unit.status = ActiveStatus(
-                    "Parameter sent: {}".format(parameter)
-                )
+        try:
+            rel_id2 = self.model.relations.__getitem__("scscfip")
+            for i in rel_id2:
+                relation = self.model.get_relation("scscfip", i.id)
+                parameter = str(self.model.get_binding(relation).network.bind_address)
+                logger.info(parameter)
+                if parameter != "None":
+                    relation.data[self.model.app]["parameter"] = parameter
+                    self.model.unit.status = ActiveStatus(
+                        "Parameter sent: {}".format(parameter)
+                    )
+        except Exception as err:
+            logger.error("Error in scscf relation data: %s", str(err))
+            self.unit.status = BlockedStatus("Ip could not be obtained")
+            return
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.

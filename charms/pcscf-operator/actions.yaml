@@ -28,3 +28,8 @@ log-level:
             default: ""
 debug-level:
     description: "Changing debug level at day1"
+    params:
+        debug:
+            description: "debug level change"
+            type: integer
+            default: ""

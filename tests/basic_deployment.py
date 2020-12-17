@@ -11,35 +11,35 @@ import zaza.model as model
 import pymysql
 
 
+def create_connection():
+    """ creating mysqldb connection """
+    try:
+        for unit in model.get_units("mysql"):
+            logging.info("Checking if the unit db is active: %s", unit.entity_id)
+            logging.info("checking for mysql db connection ......")
+            db_ip = model.get_status().applications["mysql"]["units"][
+                unit.entity_id
+            ]["address"]
+            myclient = pymysql.connect(db_ip, "root", "root", "hss_db")
+            logging.info("Mysqldb connected successfully !!!")
+    except pymysql.Error:
+        logging.info("Could not connect to Mysqldb")
+    return myclient
+
+def mysql_read_data(db_client, identity):
+    """ Reading data from mysqldb """
+    statement = "select * from impi where identity = %s"
+    db_client.execute(statement, identity)
+    documents = db_client.fetchall()
+    return documents
+
 class BasicDeployment(unittest.TestCase):
     """ class defines functional testing of ims charms """
-
-    def create_connection(self):
-        """ creating mysqldb connection """
-        try:
-            for unit in model.get_units("mysql"):
-                logging.info("Checking if the unit db is active: %s", unit.entity_id)
-                logging.info("checking for mysql db connection ......")
-                db_ip = model.get_status().applications["mysql"]["units"][
-                    unit.entity_id
-                ]["address"]
-                myclient = pymysql.connect(db_ip, "root", "root", "hss_db")
-                logging.info("Mysqldb connected successfully !!!")
-        except pymysql.Error:
-            logging.info("Could not connect to Mysqldb")
-        return myclient
-
-    def mysql_read_data(self, db_client, identity):
-        """ Reading data from mysqldb """
-        statement = "select * from impi where identity = %s"
-        db_client.execute(statement, identity)
-        documents = db_client.fetchall()
-        return documents
 
     def test1_mysql_insert_data(self):
         """ ***** Insert Document in mysqldb ***** """
         identity = "jack@mnc001.mcc001.3gppnetwork.org"
-        myclient = BasicDeployment.create_connection(self)
+        myclient = create_connection()
         db_client = myclient.cursor()
         ins_rec = """ INSERT INTO impi \
                 (id_imsu, identity, k, auth_scheme, default_auth_scheme, amf,\
@@ -51,7 +51,7 @@ class BasicDeployment(unittest.TestCase):
         try:
             db_client.execute(ins_rec)
             logging.info("Data inserted successfully !!")
-            documents = BasicDeployment.mysql_read_data(self, db_client, identity)
+            documents = mysql_read_data(db_client, identity)
             for record in documents:
                 data = record[2]
                 logging.info("Reading the inserted doc %s", record)
@@ -63,7 +63,7 @@ class BasicDeployment(unittest.TestCase):
 
     def test3_mysql_delete_data(self):
         """ ***** Delete document in mysqldb ***** """
-        myclient = BasicDeployment.create_connection(self)
+        myclient = create_connection()
         db_client = myclient.cursor()
         del_rec = "DELETE FROM impi where identity = %s"
         identity = "joe@mnc001.mcc001.3gppnetwork.org"
@@ -71,7 +71,7 @@ class BasicDeployment(unittest.TestCase):
         try:
             db_client.execute(del_rec, identity)
             logging.info("records deleted %d", db_client.rowcount)
-            documents = BasicDeployment.mysql_read_data(self, db_client, identity)
+            documents = mysql_read_data(db_client, identity)
             rowcount = len(documents)
             self.assertEqual(0, rowcount)
         except pymysql.Error:
@@ -81,14 +81,14 @@ class BasicDeployment(unittest.TestCase):
     def test2_mysql_update_data(self):
         """ ***** Update document in mysqldb ***** """
         identity = "joe@mnc001.mcc001.3gppnetwork.org"
-        myclient = BasicDeployment.create_connection(self)
+        myclient = create_connection()
         db_client = myclient.cursor()
         update_rec = "UPDATE impi SET identity = 'joe@mnc001.mcc001.3gppnetwork.org' \
                       WHERE identity = 'jack@mnc001.mcc001.3gppnetwork.org'"
         try:
             db_client.execute(update_rec)
             logging.info("Data updated succesfully")
-            documents = BasicDeployment.mysql_read_data(self, db_client, identity)
+            documents = mysql_read_data(db_client, identity)
             logging.info(documents)
             for record in documents:
                 data = record[2]
