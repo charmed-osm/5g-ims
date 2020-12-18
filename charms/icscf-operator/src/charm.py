@@ -52,7 +52,6 @@ class IcscfCharm(CharmBase):
     """ icscf charm events class definition """
 
     state = StoredState()
-    on = IcscfEvents()
 
     def __init__(self, *args) -> NoReturn:
         super().__init__(*args)
@@ -62,14 +61,8 @@ class IcscfCharm(CharmBase):
         self.image = OCIImageResource(self, "image")
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
 
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
         self.framework.observe(self.on.publish_icscf_info, self.publish_icscf_info)
 
         # Registering required relation changed events
@@ -90,7 +83,6 @@ class IcscfCharm(CharmBase):
 
     def publish_icscf_info(self, event: EventBase) -> NoReturn:
         """Publishes ICSCF information"""
-        logging.info(event)
         if not self.unit.is_leader():
             return
 
@@ -99,15 +91,8 @@ class IcscfCharm(CharmBase):
             logging.info("REL ID2")
             logging.info(rel_id2)
             for i in rel_id2:
-                logging.info("inside for")
-                logging.info(i)
-                logging.info(i.id)
                 relation = self.model.get_relation("icscfip", i.id)
-                logger.info("ICSCF Provides")
-                logger.info("***************************************")
-                logger.info("ICSCF IP")
                 parameter = str(self.model.get_binding(relation).network.bind_address)
-                logger.info(parameter)
                 if parameter != "None":
                     relation.data[self.model.app]["parameter"] = parameter
                     self.model.unit.status = ActiveStatus(
@@ -128,12 +113,10 @@ class IcscfCharm(CharmBase):
             return
 
         mysql = event.relation.data[event.app].get("hostname")
-        logging.info("ICSCF Requires from MYSQL")
-        logging.info(mysql)
         if mysql and self.state.mysql != mysql:
             self.state.mysql = mysql
             self.on.publish_icscf_info.emit()
-            self.on.configure_pod.emit()
+            self.configure_pod()
 
     def _missing_relations(self) -> str:
         """Checks if there missing relations.
@@ -145,9 +128,8 @@ class IcscfCharm(CharmBase):
         missing_relations = [k for k, v in data_status.items() if not v]
         return ", ".join(missing_relations)
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
+    def configure_pod(self, _=None) -> NoReturn:
         """ configure pod spec """
-        logging.info(event)
         missing = self._missing_relations()
         if missing:
             self.unit.status = BlockedStatus(

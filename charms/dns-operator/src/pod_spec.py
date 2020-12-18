@@ -58,7 +58,7 @@ def _validate_relation_data(relation_state: Dict[str, Any]) -> bool:
 
 
 def _make_pod_envconfig(
-    relation: Dict[str, Any],
+    hosts: List[str],
 ) -> Dict[str, Any]:
     """Generate pod environment configuration.
     Args:
@@ -67,17 +67,9 @@ def _make_pod_envconfig(
     Returns:
         Dict[str, Any]: pod environment configuration.
     """
-
-    if _validate_relation_data(relation):
-        envconfig = {
-            # General configuration
-            "PCSCF": relation["pcscf"],
-            "ICSCF": relation["icscf"],
-            "SCSCF": relation["scscf"],
-            "HSS": relation["hss"],
-        }
-
-    return envconfig
+    return {
+        "HOSTS": ",".join(hosts),
+    }
 
 
 def _make_pod_command() -> List[str]:
@@ -88,7 +80,7 @@ def make_pod_spec(
     image_info: Dict[str, str],
     config: Dict[str, str],
     app_name: str,
-    relation: Dict[str, Any],
+    hosts: List[str],
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
     Args:
@@ -100,12 +92,10 @@ def make_pod_spec(
     Returns:
         Dict[str, Any]: Pod spec dictionary for the charm.
     """
-    if not image_info:
-        return None
-
     logger.info("*******Check in pod_spec*********")
+    # ADD VALIDATION
     ports = _make_pod_ports(config)
-    env_config = _make_pod_envconfig(relation)
+    env_config = _make_pod_envconfig(hosts)
     command = _make_pod_command()
     return {
         "version": 3,

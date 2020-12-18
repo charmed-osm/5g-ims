@@ -52,7 +52,6 @@ class ScscfCharm(CharmBase):
     """ scscf charm events class definition """
 
     state = StoredState()
-    on = ScscfEvents()
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -62,14 +61,8 @@ class ScscfCharm(CharmBase):
         self.image = OCIImageResource(self, "image")
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
 
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
         self.framework.observe(self.on.publish_scscf_info, self.publish_scscf_info)
 
         # Registering required relation changed events
@@ -90,7 +83,6 @@ class ScscfCharm(CharmBase):
 
     def publish_scscf_info(self, event: EventBase) -> NoReturn:
         """Publishes SCSCF information"""
-        logging.info(event)
         if not self.unit.is_leader():
             return
 
@@ -99,7 +91,6 @@ class ScscfCharm(CharmBase):
             for i in rel_id2:
                 relation = self.model.get_relation("scscfip", i.id)
                 parameter = str(self.model.get_binding(relation).network.bind_address)
-                logger.info(parameter)
                 if parameter != "None":
                     relation.data[self.model.app]["parameter"] = parameter
                     self.model.unit.status = ActiveStatus(
@@ -120,12 +111,10 @@ class ScscfCharm(CharmBase):
             return
 
         mysql = event.relation.data[event.app].get("hostname")
-        logging.info("SCSCF Requires from MYSQL")
-        logging.info(mysql)
         if mysql and self.state.mysql != mysql:
             self.state.mysql = mysql
             self.on.publish_scscf_info.emit()
-            self.on.configure_pod.emit()
+            self.configure_pod()
 
     def _missing_relations(self) -> str:
         """Checks if there missing relations.
@@ -137,13 +126,12 @@ class ScscfCharm(CharmBase):
         missing_relations = [k for k, v in data_status.items() if not v]
         return ", ".join(missing_relations)
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
+    def configure_pod(self, _=None) -> NoReturn:
         """Assemble the pod spec and apply it, if possible.
         Args:
             event (EventBase): Hook or Relation event that started the
                                function.
         """
-        logging.info(event)
         missing = self._missing_relations()
         if missing:
             self.unit.status = BlockedStatus(
@@ -152,7 +140,6 @@ class ScscfCharm(CharmBase):
                 )
             )
             return
-        logging.info("Configure pod")
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
             return

@@ -47,7 +47,6 @@ class MysqlCharm(CharmBase):
     """ mysql charm events class definition """
 
     state = StoredState()
-    on = MysqlEvents()
 
     def __init__(self, *args) -> NoReturn:
         super().__init__(*args)
@@ -57,14 +56,7 @@ class MysqlCharm(CharmBase):
         self.image = OCIImageResource(self, "image")
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
-
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
 
         # Registering required relation changed events
         self.framework.observe(self.on.mysql_relation_joined, self.publish_mysql_info)
@@ -77,19 +69,17 @@ class MysqlCharm(CharmBase):
     def publish_mysql_info(self, event: EventBase) -> NoReturn:
         """ mysql publish function """
         if self.unit.is_leader():
-            logging.info(self.model.app.name)
             event.relation.data[self.model.app]["hostname"] = self.model.app.name
             self.model.unit.status = ActiveStatus(
                 "Parameter sent: {}".format(self.model.app.name)
             )
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
+    def configure_pod(self, _=None) -> NoReturn:
         """Assemble the pod spec and apply it, if possible.
         Args:
             event (EventBase): Hook or Relation event that started the
                                function.
         """
-        logging.info(event)
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
             return

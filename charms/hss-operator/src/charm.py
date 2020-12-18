@@ -32,26 +32,10 @@ from pod_spec import make_pod_spec
 logger = logging.getLogger(__name__)
 
 
-class ConfigurePodEvent(EventBase):
-    """Configure Pod event"""
-
-
-class PublishHssEvent(EventBase):
-    """Publish Hss event"""
-
-
-class HssEvents(CharmEvents):
-    """HSS Events"""
-
-    configure_pod = EventSource(ConfigurePodEvent)
-    publish_hss_info = EventSource(PublishHssEvent)
-
-
 class HssCharm(CharmBase):
     """ hss charm events class definition """
 
     state = StoredState()
-    on = HssEvents()
 
     def __init__(self, *args) -> NoReturn:
         super().__init__(*args)
@@ -61,15 +45,7 @@ class HssCharm(CharmBase):
         self.image = OCIImageResource(self, "image")
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
-
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
-        self.framework.observe(self.on.publish_hss_info, self.publish_hss_info)
 
         # Registering required relation changed events
         self.framework.observe(
@@ -85,31 +61,6 @@ class HssCharm(CharmBase):
         self.state.set_default(started=False)
         self.state.set_default(mysql=None)
 
-    def publish_hss_info(self, event: EventBase) -> NoReturn:
-        """Publishes Hss information"""
-        logging.info(event)
-        if not self.unit.is_leader():
-            return
-
-        try:
-            rel_id2 = self.model.relations.__getitem__("hssip")
-            logging.info("REL ID2")
-            logging.info(rel_id2)
-            for i in rel_id2:
-                relation = self.model.get_relation("hssip", i.id)
-                logger.info("HSS Provides")
-                parameter = str(self.model.get_binding(relation).network.bind_address)
-                logger.info(parameter)
-                if parameter != "None":
-                    relation.data[self.model.app]["parameter"] = parameter
-                    self.model.unit.status = ActiveStatus(
-                        "Parameter sent: {}".format(parameter)
-                    )
-        except Exception as err:
-            logger.error("Error in hss relation data: %s", str(err))
-            self.unit.status = BlockedStatus("Ip could not be obtained")
-            return
-
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.
 
@@ -120,12 +71,9 @@ class HssCharm(CharmBase):
             return
 
         mysql = event.relation.data[event.app].get("hostname")
-        logging.info("HSS Requires from MYSQL")
-        logging.info(mysql)
         if mysql and self.state.mysql != mysql:
             self.state.mysql = mysql
-            self.on.publish_hss_info.emit()
-            self.on.configure_pod.emit()
+            self.configure_pod()
 
     def _missing_relations(self) -> str:
         """Checks if there missing relations.
@@ -137,13 +85,12 @@ class HssCharm(CharmBase):
         missing_relations = [k for k, v in data_status.items() if not v]
         return ", ".join(missing_relations)
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
+    def configure_pod(self, _=None) -> NoReturn:
         """Assemble the pod spec and apply it, if possible.
         Args:
             event (EventBase): Hook or Relation event that started the
                                function.
         """
-        logging.info(event)
         missing = self._missing_relations()
         if missing:
             self.unit.status = BlockedStatus(
@@ -152,8 +99,6 @@ class HssCharm(CharmBase):
                 )
             )
             return
-        logger.info("Configure pod")
-        logger.info("****************************************")
 
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
@@ -184,7 +129,6 @@ class HssCharm(CharmBase):
             self.state.pod_spec = pod_spec
 
         self.unit.status = ActiveStatus("ready")
-        self.on.publish_hss_info.emit()
 
 
 if __name__ == "__main__":
