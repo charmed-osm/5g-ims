@@ -20,24 +20,25 @@
 ##
 ---
 name: dns
-description: Custom DNS server used for communication between IMS components
-summary: DNS used for communication between IMS components.
+summary: dns deploys the dns as a microk8s pod
+maintainers:
+    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+description: |
+    DNS deploys the DNS,as a microk8s based pod.
+    Domain Name Server (DNS) used for communication between IMS components
 tags:
-  - ims
+    - ims
 series: [kubernetes]
-resources:
-  image:
-    type: oci-image
-    description: docker image for DNS
+min-juju-version: 2.8.2
 deployment:
-  type: stateful
-  service: cluster
+    type: stateful
+    service: cluster
 requires:
-  hssip:
-    interface: hssip
-  icscfip:
-    interface: icscfip
-  pcscfip:
-    interface: pcscfip
-  scscfip:
-    interface: scscfip
+    hssip:
+        interface: hssip
+    icscfip:
+        interface: icscfip
+    pcscfip:
+        interface: pcscfip
+    scscfip:
+        interface: scscfip

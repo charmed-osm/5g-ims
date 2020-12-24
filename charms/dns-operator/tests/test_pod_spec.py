@@ -47,7 +47,6 @@ class TestPodSpec(unittest.TestCase):
         portdict = {
             "dns_port": 53,
         }
-        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(portdict)
 
         self.assertListEqual(expected_result, pod_ports)
@@ -56,22 +55,8 @@ class TestPodSpec(unittest.TestCase):
         """Testing make pod command"""
 
         expected_result = ["./init_dns.sh", "&"]
-        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
-
-    def test_validate_relation_data(self) -> NoReturn:
-        """Testing validation of relation data"""
-        expected_result = True
-        relation = {
-            "pcscf": "127.0.0.1",
-            "icscf": "127.0.0.1",
-            "scscf": "127.0.0.1",
-            "hss": "127.0.0.1",
-        }
-        # pylint:disable=W0212
-        result = pod_spec._validate_relation_data(relation)
-        self.assertEqual(expected_result, result)
 
     def test_make_pod_envconfig(self) -> NoReturn:
         """Testing make pod envconfig"""
@@ -88,9 +73,20 @@ class TestPodSpec(unittest.TestCase):
             "scscf": "127.0.0.1",
             "hss": "127.0.0.1",
         }
-        # pylint:disable=W0212
         pod_envconfig = pod_spec._make_pod_envconfig(ipadd)
         self.assertEqual(expected_result, pod_envconfig)
+
+    def test_validate_config(self) -> NoReturn:
+        """Testing config data exception scenario"""
+        config = {"dns_port": 1234}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_config(config)
+
+    def test_validate_relation(self) -> NoReturn:
+        """Testing relation data exception scenario"""
+        relation_state = {"pcscf": "norelation_mongodb"}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_relation_state(relation_state)
 
     def test_make_pod_spec(self) -> NoReturn:
         """Teting make pod spec"""

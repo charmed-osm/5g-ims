@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" test script for pod spec.py """
+"""test script for pod spec.py"""
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -40,7 +40,6 @@ class TestPodSpec(unittest.TestCase):
             }
         ]
         dictport = {"pcscf_port": 4070}
-        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(dictport)
 
         self.assertListEqual(expected_result, pod_ports)
@@ -49,7 +48,6 @@ class TestPodSpec(unittest.TestCase):
         """Testing make pod command"""
 
         expected_result = ["./init_pcscf.sh", "&"]
-        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
 
@@ -63,8 +61,12 @@ class TestPodSpec(unittest.TestCase):
             "MYSQL_ROOT_PASSWORD": "root",
         }
         model = "pcscf"
-        # pylint:disable=W0212
-        pod_envconfig = pod_spec._make_pod_envconfig(model)
+        relation_state = {
+            "db": "mysql",
+            "user": "root",
+            "pwd": "root",
+        }
+        pod_envconfig = pod_spec._make_pod_envconfig(model, relation_state)
         self.assertEqual(expected_result, pod_envconfig)
 
     def test_make_pod_services(self) -> NoReturn:
@@ -80,20 +82,38 @@ class TestPodSpec(unittest.TestCase):
                 ]
             }
         ]
-        # pylint:disable=W0212
         pod_services = pod_spec._make_pod_services()
         self.assertEqual(expected_result, pod_services)
 
+    def test_validate_config(self) -> NoReturn:
+        """Testing config data scenario."""
+        config = {"pcscf_port": 1234}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_config(config)
+
+    def test_validate_relation(self) -> NoReturn:
+        """Testing relation data scenario."""
+        relation_state = {"user": "xyz"}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_relation_state(relation_state)
+
     def test_make_pod_spec(self) -> NoReturn:
-        """Teting make pod spec"""
+        """Teting make pod spec."""
         image_info = {"upstream-source": "localhost:32000/pcscf:1.0"}
         config = {
             "pcscf_port": 9999,
         }
         model_name = "pcscf"
         app_name = "pcscf"
+        relation_state = {
+            "db": "mysql",
+            "user": "root",
+            "pwd": "root",
+        }
         with self.assertRaises(ValueError):
-            pod_spec.make_pod_spec(image_info, model_name, config, app_name)
+            pod_spec.make_pod_spec(
+                image_info, model_name, config, app_name, relation_state
+            )
 
 
 if __name__ == "__main__":

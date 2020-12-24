@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" mysql test script for charm.py """
+"""mysql test script for charm.py"""
 
 import unittest
 
@@ -31,23 +31,23 @@ from charm import MysqlCharm
 
 
 class TestCharm(unittest.TestCase):
-    """ Test script for checking relations """
+    """Test script for checking relations"""
 
     def setUp(self) -> NoReturn:
-        """Test setup"""
+        """Test setup."""
         self.harness = Harness(MysqlCharm)
         self.harness.set_leader(is_leader=True)
         self.harness.begin()
 
     def test_config_changed(self):
-        """ Test script for pod spec """
+        """Test script for pod spec."""
         self.harness.charm.on.start.emit()
         expected_result = {
             "version": 3,
             "containers": [
                 {
                     "name": "mysql",
-                    "imageDetails": self.harness.charm.image.fetch(),
+                    "image": "mysql:5.7",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {"name": "sql", "containerPort": 3306, "protocol": "TCP"}
@@ -72,7 +72,11 @@ class TestCharm(unittest.TestCase):
 
     def test_publish_pcscf_mysql_info(self) -> NoReturn:
         """Test to see if mysql relation is updated."""
-        expected_result = {"hostname": "mysql"}
+        expected_result = {
+            "hostname": "mysql",
+            "mysql_user": "root",
+            "mysql_pwd": "root",
+        }
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "pcscf")
         self.harness.add_relation_unit(relation_id, "pcscf/0")
@@ -81,7 +85,11 @@ class TestCharm(unittest.TestCase):
 
     def test_publish_icscf_mysql_info(self) -> NoReturn:
         """Test to see if mysql relation is updated."""
-        expected_result = {"hostname": "mysql"}
+        expected_result = {
+            "hostname": "mysql",
+            "mysql_user": "root",
+            "mysql_pwd": "root",
+        }
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "icscf")
         self.harness.add_relation_unit(relation_id, "icscf/0")
@@ -90,7 +98,11 @@ class TestCharm(unittest.TestCase):
 
     def test_publish_scscf_mysql_info(self) -> NoReturn:
         """Test to see if mysql relation is updated."""
-        expected_result = {"hostname": "mysql"}
+        expected_result = {
+            "hostname": "mysql",
+            "mysql_user": "root",
+            "mysql_pwd": "root",
+        }
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "scscf")
         self.harness.add_relation_unit(relation_id, "scscf/0")
@@ -99,7 +111,11 @@ class TestCharm(unittest.TestCase):
 
     def test_publish_hss_mysql_info(self) -> NoReturn:
         """Test to see if mysql relation is updated."""
-        expected_result = {"hostname": "mysql"}
+        expected_result = {
+            "hostname": "mysql",
+            "mysql_user": "root",
+            "mysql_pwd": "root",
+        }
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "hss")
         self.harness.add_relation_unit(relation_id, "hss/0")

@@ -19,77 +19,54 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" Defining mysql charm events """
+"""Defining mysql charm events"""
 
 import logging
 from typing import NoReturn
-from ops.charm import CharmBase, CharmEvents
+from ops.charm import CharmBase
 from ops.main import main
-from ops.framework import StoredState, EventSource, EventBase
+from ops.framework import StoredState, EventBase
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
-from oci_image import OCIImageResource, OCIImageResourceError
 from pod_spec import make_pod_spec
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigurePodEvent(EventBase):
-    """Configure Pod event"""
-
-
-class MysqlEvents(CharmEvents):
-    """MYSQL Events"""
-
-    configure_pod = EventSource(ConfigurePodEvent)
-
-
 class MysqlCharm(CharmBase):
-    """ mysql charm events class definition """
+    """mysql charm"""
 
     state = StoredState()
-    on = MysqlEvents()
 
     def __init__(self, *args) -> NoReturn:
+        """MYSQL charm constructor."""
         super().__init__(*args)
         # Internal state initialization
         self.state.set_default(pod_spec=None)
 
-        self.image = OCIImageResource(self, "image")
-
         # Registering regular events
         self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
-
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
 
         # Registering required relation changed events
         self.framework.observe(self.on.mysql_relation_joined, self.publish_mysql_info)
 
-        # -- initialize states --
-        self.state.set_default(installed=False)
-        self.state.set_default(configured=False)
-        self.state.set_default(started=False)
-
     def publish_mysql_info(self, event: EventBase) -> NoReturn:
-        """ mysql publish function """
-        if self.unit.is_leader():
-            logging.info(self.model.app.name)
-            event.relation.data[self.model.app]["hostname"] = self.model.app.name
-            self.model.unit.status = ActiveStatus(
-                "Parameter sent: {}".format(self.model.app.name)
-            )
+        """mysql publish function.
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
-        """Assemble the pod spec and apply it, if possible.
         Args:
-            event (EventBase): Hook or Relation event that started the
-                               function.
+            event (EventBase): mysql publish function.
         """
-        logging.info(event)
+        if self.unit.is_leader():
+            rel_data = {
+                "hostname": self.model.app.name,
+                "mysql_user": "root",
+                "mysql_pwd": "root",
+            }
+            for k, param in rel_data.items():
+                event.relation.data[self.model.app][k] = param
+
+    def configure_pod(self, _=None) -> NoReturn:
+        """Assemble the pod spec and apply it, if possible."""
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
             return
@@ -97,13 +74,8 @@ class MysqlCharm(CharmBase):
         self.unit.status = MaintenanceStatus("Assembling pod spec")
 
         # Fetch image information
-        try:
-            self.unit.status = MaintenanceStatus("Fetching image information")
-            image_info = self.image.fetch()
-        except OCIImageResourceError:
-            self.unit.status = BlockedStatus("Error fetching image information")
-            return
 
+        image_info = self.config["image"]
         try:
             pod_spec = make_pod_spec(
                 image_info,

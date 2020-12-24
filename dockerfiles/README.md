@@ -18,15 +18,19 @@
  To get in touch with the maintainers, please contact:
  canonical@tataelxsi.onmicrosoft.com
 -->
-# 5g-ims dockerfiles
+
+# 5g-ims Dockerfiles
 
 The current directory holds the dockerfiles for IMS components
 
-## description
+## Description
 
-consists of 2 base dockerfiles and 5 component dockerfiles
+Consists of 2 base dockerfiles and 5 component dockerfiles
 
-Base Dockerfiles:
+### Base Dockerfiles
+
+Used to build the ims base images. These image would be used as base images to
+build all the IMS components.
 
 * ims_base
 * hss_base
@@ -39,25 +43,33 @@ Component Dockerfiles:
 * hss
 * dns
 
-## Prerequisites
-
-Build base images for ims and hss components with the given imagename and tag
-
-sudo docker build -t ims:base -f ims_base
-sudo docker build -t hss:base -f hss_base 
-
 ## Usage
 
-Move into corresponding directory and build the images
+To build images of all the 5G IMS Components,
 
-Example:
-   cd pcscf
-   sudo docker build -t <image_name>:tag .
+```bash
+
+cd ..
+./build_docker_images.sh
+
+```
+
+To push the built images to registry,
+
+```bash
+
+docker push localhost:32000/ims_pcscf:1.0
+docker push localhost:32000/ims_scscf:1.0
+docker push localhost:32000/ims_icscf:1.0
+docker push localhost:32000/ims_hss:1.0
+docker push localhost:32000/ims_dns:1.0
+
+```
 
 ## Exposed Ports
 
 ----------------------------------------------------------
-|     NF       |   Exposed Ports  | Dependencies         |        
+|     NF       |   Exposed Ports  | Dependencies         |
 ----------------------------------------------------------
 |   pcscf      |      4070        |   mysql              |
 ----------------------------------------------------------

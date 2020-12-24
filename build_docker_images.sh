@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Tata Elxsi
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,44 +18,20 @@
 #
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
-##
----
-description: IMS Bundle
-bundle: kubernetes
-applications:
-  mysql:
-    charm: './charms/mysql-operator/mysql.charm'
-    scale: 1
-  hss:
-    charm: './charms/hss-operator/hss.charm'
-    scale: 1
-  dns:
-    charm: './charms/dns-operator/dns.charm'
-    scale: 1
-  icscf:
-    charm: './charms/icscf-operator/icscf.charm'
-    scale: 1
-  pcscf:
-    charm: './charms/pcscf-operator/pcscf.charm'
-    scale: 1
-  scscf:
-    charm: './charms/scscf-operator/scscf.charm'
-    scale: 1
-
-relations:
-  - - mysql:mysql
-    - hss:mysql
-  - - mysql:mysql
-    - pcscf:mysql
-  - - mysql:mysql
-    - scscf:mysql
-  - - mysql:mysql
-    - icscf:mysql
-  - - hss:hssip
-    - dns:hssip
-  - - icscf:icscfip
-    - dns:icscfip
-  - - pcscf:pcscfip
-    - dns:pcscfip
-  - - scscf:scscfip
-    - dns:scscfip
+ims_components="dns hss icscf pcscf scscf"
+dir=dockerfiles
+if [ -z `which docker` ]; then
+    sudo apt-get update
+    sudo apt-get install -y docker.io
+fi
+cd $dir
+echo "Building base images for IMS"
+sudo docker build -t ims:base -f ims_base .
+sudo docker build -t hss:base -f hss_base .
+for component in $ims_components; do
+    echo "Building image for $component..."
+    cd $component
+    sudo docker build -t localhost:32000/ims_$component:1.0 .
+    cd ..
+done
+sudo docker images | grep "localhost:32000/ims_"

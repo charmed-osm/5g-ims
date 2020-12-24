@@ -1,3 +1,24 @@
+# Copyright 2020 Tata Elxsi
+#
+# Licensed under the Apache License, Version 2.0 (the License); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# For those usages not covered by the Apache License, Version 2.0 please
+# contact: canonical@tataelxsi.onmicrosoft.com
+#
+# To get in touch with the maintainers, please contact:
+# canonical@tataelxsi.onmicrosoft.com
+##
+
 ---
 description: IMS Bundle for Functional Testing
 bundle: kubernetes
@@ -5,38 +26,21 @@ applications:
   mysql:
     charm: '../../charms/mysql-operator/mysql.charm'
     scale: 1
-    resources:
-      image: 'mysql:5.7'
-
   hss:
     charm: '../../charms/hss-operator/hss.charm'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_hss:1.0'
-
   dns:
     charm: '../../charms/dns-operator/dns.charm'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_dns:1.0'
-
   icscf:
     charm: '../../charms/icscf-operator/icscf.charm'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_icscf:1.0'
-
   pcscf:
     charm: '../../charms/pcscf-operator/pcscf.charm'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_pcscf:1.0'
-
   scscf:
     charm: '../../charms/scscf-operator/scscf.charm'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_scscf:1.0'
 
 relations:
   - - mysql:mysql

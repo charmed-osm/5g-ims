@@ -1,13 +1,14 @@
+#!/bin/bash
 # Copyright 2020 Tata Elxsi
 #
-# Licensed under the Apache License, Version 2.0 (the License); you may
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
 #         http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
@@ -17,17 +18,20 @@
 #
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
-##
----
-options:
-    image:
-        type: string
-        description: |
-            Docker image for RAN
-        default: localhost:32000/ims_scscf:v7.0
-    diameter_port:
-        type: int
-        description: |
-            diameter_port used for communication
-            between scscf and hss
-        default: 3870
+
+cd charms
+charms="dns-operator hss-operator icscf-operator mysql-operator pcscf-operator scscf-operator"
+
+if [ -z `which charmcraft` ]; then
+    echo "Installing charmcraft snap"
+    sudo snap install charmcraft --beta
+fi
+
+for charm_directory in $charms; do
+    echo "Building charm $charm_directory..."
+    cd $charm_directory
+    charmcraft build
+    cd ..
+done
+
+cd ..

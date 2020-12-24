@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" pcscf test script for charm.py """
+"""pcscf test script for charm.py"""
 
 import unittest
 
@@ -31,10 +31,10 @@ from charm import PcscfCharm
 
 
 class TestCharm(unittest.TestCase):
-    """ Test script for checking relations """
+    """Test script for checking relations."""
 
     def setUp(self) -> NoReturn:
-        """Test setup"""
+        """Test setup."""
         self.harness = Harness(PcscfCharm)
         self.harness.set_leader(is_leader=True)
         self.harness.begin()
@@ -60,7 +60,7 @@ class TestCharm(unittest.TestCase):
             "containers": [
                 {
                     "name": "pcscf",
-                    "imageDetails": self.harness.charm.image.fetch(),
+                    "image": "localhost:32000/ims_pcscf:v7.0",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {"name": "pcscf", "containerPort": 4070, "protocol": "TCP"}
@@ -96,7 +96,9 @@ class TestCharm(unittest.TestCase):
         mysql_relation_id = self.harness.add_relation("mysql", "mysql")
         self.harness.add_relation_unit(mysql_relation_id, "mysql/0")
         self.harness.update_relation_data(
-            mysql_relation_id, "mysql", {"hostname": "mysql"}
+            mysql_relation_id,
+            "mysql",
+            {"hostname": "mysql", "mysql_user": "root", "mysql_pwd": "root"},
         )
 
         # Checking if nrf data is stored
@@ -116,7 +118,11 @@ class TestCharm(unittest.TestCase):
 
         relation_id = self.harness.add_relation("mysql", "mysql")
         self.harness.add_relation_unit(relation_id, "mysql/0")
-        self.harness.update_relation_data(relation_id, "mysql", {"hostname": "mysql"})
+        self.harness.update_relation_data(
+            relation_id,
+            "mysql",
+            {"hostname": "mysql", "mysql_user": "root", "mysql_pwd": "root"},
+        )
 
         # Verifying status
         self.assertNotIsInstance(self.harness.charm.unit.status, BlockedStatus)

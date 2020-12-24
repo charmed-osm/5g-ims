@@ -20,26 +20,26 @@
 ##
 ---
 name: scscf
-description: Serving CSCF decides whether UE’s sip
-             message should be forwarded to application servers
-summary: SCSCF checks for the authentication data of UE and proceeds
-         to forward the registration request  or SIP messages to the
-         application servers only if the authentication data matches
-         with the database
+summary: scscf deploys the kamailio developed scscf as a microk8s pod
+maintainers:
+    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+description: |
+    serving cscf decides whether ue's sip message should
+    be forwarded to proper application servers.
+    scscf checks for the authentication data of UE and proceeds
+    to forward the registration request or sip messages to the
+    application servers only if the authentication data matches
+    with the database
 tags:
-  - ims
+    - ims
 series: [kubernetes]
+min-juju-version: 2.8.2
 deployment:
-  type: stateful
-  service: cluster
-resources:
-  image:
-    type: oci-image
-    description: docker image for SCSCF
-    # upstream-source: "10.45.5.100:4200/canonical/ims_hss:v2.0"
+    type: stateful
+    service: cluster
 provides:
-  scscfip:
-    interface: scscfip
+    scscfip:
+        interface: scscfip
 requires:
-  mysql:
-    interface: mysql
+    mysql:
+        interface: mysql

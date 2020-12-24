@@ -20,8 +20,14 @@
 ##
 ---
 options:
+    image:
+        type: string
+        description: |
+            Docker image for pcscf
+        default: localhost:32000/ims_pcscf:v7.0
     pcscf_port:
         type: int
-        description: 'pcscf_port is used for TCP
-                      communication between core and ims'
+        description: |
+            pcscf_port is used for TCP
+            communication between core and ims
         default: 4070

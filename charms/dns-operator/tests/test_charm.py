@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" dns test script for charm.py """
+"""dns test script for charm.py"""
 import unittest
 
 # from unittest.mock import Mock
@@ -31,10 +31,10 @@ from charm import DnsCharm
 
 
 class TestCharm(unittest.TestCase):
-    """ Test script for checking relations """
+    """Test script for checking relations"""
 
     def setUp(self) -> NoReturn:
-        """Test setup"""
+        """Test setup."""
         self.harness = Harness(DnsCharm)
         self.harness.set_leader(is_leader=True)
         self.harness.begin()
@@ -60,7 +60,7 @@ class TestCharm(unittest.TestCase):
             "containers": [
                 {
                     "name": "dns",
-                    "imageDetails": self.harness.charm.image.fetch(),
+                    "image": "localhost:32000/ims_dns:v7.0",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {
@@ -94,28 +94,28 @@ class TestCharm(unittest.TestCase):
         pcscf_relation_id = self.harness.add_relation("pcscfip", "pcscfip")
         self.harness.add_relation_unit(pcscf_relation_id, "pcscfip/0")
         self.harness.update_relation_data(
-            pcscf_relation_id, "pcscfip", {"parameter": "10.45.30.27"}
+            pcscf_relation_id, "pcscfip/0", {"parameter": "10.45.30.27"}
         )
 
         # Initializing icscf relation
         icscf_relation_id = self.harness.add_relation("icscfip", "icscfip")
         self.harness.add_relation_unit(icscf_relation_id, "icscfip/0")
         self.harness.update_relation_data(
-            icscf_relation_id, "icscfip", {"parameter": "10.45.30.28"}
+            icscf_relation_id, "icscfip/0", {"parameter": "10.45.30.28"}
         )
 
         # Initializing scscf relation
         scscf_relation_id = self.harness.add_relation("scscfip", "scscfip")
         self.harness.add_relation_unit(scscf_relation_id, "scscfip/0")
         self.harness.update_relation_data(
-            scscf_relation_id, "scscfip", {"parameter": "10.45.30.29"}
+            scscf_relation_id, "scscfip/0", {"parameter": "10.45.30.29"}
         )
 
         # Initializing hss relation
         hss_relation_id = self.harness.add_relation("hssip", "hssip")
         self.harness.add_relation_unit(hss_relation_id, "hssip/0")
         self.harness.update_relation_data(
-            hss_relation_id, "hssip", {"parameter": "10.45.30.30"}
+            hss_relation_id, "hssip/0", {"parameter": "10.45.30.30"}
         )
 
         # Checking if nrf data is stored
@@ -145,7 +145,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("pcscfip", "pcscfip")
         self.harness.add_relation_unit(relation_id, "pcscfip/0")
         self.harness.update_relation_data(
-            relation_id, "pcscfip", {"parameter": "pcscfip"}
+            relation_id, "pcscfip/0", {"parameter": "10.45.30.27"}
         )
 
         # Verifying status
@@ -166,7 +166,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("icscfip", "icscfip")
         self.harness.add_relation_unit(relation_id, "icscfip/0")
         self.harness.update_relation_data(
-            relation_id, "icscfip", {"parameter": "icscfip"}
+            relation_id, "icscfip/0", {"parameter": "10.45.30.28"}
         )
 
         # Verifying status
@@ -187,7 +187,7 @@ class TestCharm(unittest.TestCase):
         relation_id = self.harness.add_relation("scscfip", "scscfip")
         self.harness.add_relation_unit(relation_id, "scscfip/0")
         self.harness.update_relation_data(
-            relation_id, "scscfip", {"parameter": "scscfip"}
+            relation_id, "scscfip/0", {"parameter": "10.45.30.29"}
         )
 
         # Verifying status
@@ -207,7 +207,9 @@ class TestCharm(unittest.TestCase):
 
         relation_id = self.harness.add_relation("hssip", "hssip")
         self.harness.add_relation_unit(relation_id, "hssip/0")
-        self.harness.update_relation_data(relation_id, "hssip", {"parameter": "hssip"})
+        self.harness.update_relation_data(
+            relation_id, "hssip/0", {"parameter": "10.45.30.30"}
+        )
 
         # Verifying status
         self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)

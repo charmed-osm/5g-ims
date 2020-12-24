@@ -1,4 +1,25 @@
 #!/usr/bin/python3
+# Copyright 2020 Tata Elxsi
+#
+# Licensed under the Apache License, Version 2.0 (the License); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# For those usages not covered by the Apache License, Version 2.0 please
+# contact: canonical@tataelxsi.onmicrosoft.com
+#
+# To get in touch with the maintainers, please contact:
+# canonical@tataelxsi.onmicrosoft.com
+##
+
 """
 Ubuntu charm functional test using Zaza. Take note that the Ubuntu
 charm does not have any relations or config options to exercise.
@@ -17,14 +38,15 @@ def create_connection():
         for unit in model.get_units("mysql"):
             logging.info("Checking if the unit db is active: %s", unit.entity_id)
             logging.info("checking for mysql db connection ......")
-            db_ip = model.get_status().applications["mysql"]["units"][
-                unit.entity_id
-            ]["address"]
+            db_ip = model.get_status().applications["mysql"]["units"][unit.entity_id][
+                "address"
+            ]
             myclient = pymysql.connect(db_ip, "root", "root", "hss_db")
             logging.info("Mysqldb connected successfully !!!")
     except pymysql.Error:
         logging.info("Could not connect to Mysqldb")
     return myclient
+
 
 def mysql_read_data(db_client, identity):
     """ Reading data from mysqldb """
@@ -32,6 +54,7 @@ def mysql_read_data(db_client, identity):
     db_client.execute(statement, identity)
     documents = db_client.fetchall()
     return documents
+
 
 class BasicDeployment(unittest.TestCase):
     """ class defines functional testing of ims charms """

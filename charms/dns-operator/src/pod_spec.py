@@ -19,69 +19,84 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" Pod spec for dns charm """
+"""Pod spec for dns charm"""
 import logging
 from typing import Any, Dict, List
 from IPy import IP
 
 logger = logging.getLogger(__name__)
 
+DNS_PORT = 53
+
 
 def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
+
     Args:
         config Dict[str,Any]: Config details.
+
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    if config["dns_port"] == 53:
-        return [
-            {"name": "dnstcp", "containerPort": config["dns_port"], "protocol": "TCP"},
-            {"name": "dnsudp", "containerPort": config["dns_port"], "protocol": "UDP"},
-        ]
-    raise ValueError("Invalid dns_port")
-
-
-def _validate_relation_data(relation_state: Dict[str, Any]) -> bool:
-    """Validate relation data.
-    Args:
-        relation (Dict[str, Any]): relation state information.
-    Returns:
-        bool: True or False
-    """
-    if IP(relation_state["pcscf"]):
-        if IP(relation_state["icscf"]):
-            if IP(relation_state["scscf"]):
-                if IP(relation_state["hss"]):
-                    return True
-    return False
+    return [
+        {"name": "dnstcp", "containerPort": config["dns_port"], "protocol": "TCP"},
+        {"name": "dnsudp", "containerPort": config["dns_port"], "protocol": "UDP"},
+    ]
 
 
 def _make_pod_envconfig(
     relation: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Generate pod environment configuration.
+
     Args:
         config (Dict[str, Any]): configuration information.
         relation (Dict[str, Any]): relation state information.
+
     Returns:
         Dict[str, Any]: pod environment configuration.
     """
-
-    if _validate_relation_data(relation):
-        envconfig = {
-            # General configuration
-            "PCSCF": relation["pcscf"],
-            "ICSCF": relation["icscf"],
-            "SCSCF": relation["scscf"],
-            "HSS": relation["hss"],
-        }
-
-    return envconfig
+    return {
+        # General configuration
+        "PCSCF": relation["pcscf"],
+        "ICSCF": relation["icscf"],
+        "SCSCF": relation["scscf"],
+        "HSS": relation["hss"],
+    }
 
 
 def _make_pod_command() -> List[str]:
+    """Generate pod command.
+
+    Returns:
+        List[str]:pod command.
+    """
     return ["./init_dns.sh", "&"]
+
+
+def _validate_relation_state(relation_state: Dict[str, Any]):
+    """Validate relation data.
+
+    Args:
+        relation (Dict[str, Any]): relation state information.
+    """
+    pcscf = relation_state.get("pcscf")
+    icscf = relation_state.get("icscf")
+    scscf = relation_state.get("scscf")
+    hss = relation_state.get("hss")
+    for host in pcscf, icscf, scscf, hss:
+        if not IP(host):
+            raise ValueError("Value error in host ip")
+
+
+def _validate_config(config: Dict[str, Any]):
+    """Validate config data.
+
+    Args:
+        config (Dict[str, Any]): configuration information.
+    """
+    if config.get("dns_port") != DNS_PORT:
+        raise ValueError("Invalid dns port")
 
 
 def make_pod_spec(
@@ -91,19 +106,22 @@ def make_pod_spec(
     relation: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
+
     Args:
         image_info (Dict[str, str]): Object provided by
                                      OCIImageResource("image").fetch().
         config (Dict[str, Any]): Configuration information.
         relation (Dict[str, Any]): Relation state information.
         app_name (str, optional): Application name.
+
     Returns:
         Dict[str, Any]: Pod spec dictionary for the charm.
     """
     if not image_info:
         return None
 
-    logger.info("*******Check in pod_spec*********")
+    _validate_config(config)
+    _validate_relation_state(relation)
     ports = _make_pod_ports(config)
     env_config = _make_pod_envconfig(relation)
     command = _make_pod_command()
@@ -112,7 +130,7 @@ def make_pod_spec(
         "containers": [
             {
                 "name": app_name,
-                "imageDetails": image_info,
+                "image": image_info,
                 "imagePullPolicy": "Always",
                 "ports": ports,
                 "envConfig": env_config,

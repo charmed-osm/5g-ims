@@ -19,28 +19,48 @@
  To get in touch with the maintainers, please contact:
  canonical@tataelxsi.onmicrosoft.com
 -->
-# dns
+
+# DNS
 
 ## Description
 
 Custom DNS server used for communication between IMS components
 
+## Prerequisite
+
+1. Install Charmcraft
+
+```bash
+sudo snap install charmcraft --beta
+```
+
 ## Usage
 
-DNS used for communication between IMS components. Fetches ip address through relations from pcscf, icscf,scscf and hss. Acts as custom dns server for the components within ims cluster to resolve the other components.
+DNS used for communication between IMS components. Fetches ip address through
+relations from pcscf, icscf,scscf and hss. Acts as custom dns server for the
+components within ims cluster to resolve the other components.
 
+### Deploy from local repository
+
+   ```bash
+   charmcraft build
+   juju deploy dns.charm
+   ```
+
+NOTE: DNS can be deployed only after PCSCF, SCSCF, ICSCF and HSS are up because
+of relations configured between these.
 
 ## Developing
 
 Create and activate a virtualenv with the development requirements:
 
-    virtualenv -p python3 venv
-    source venv/bin/activate
-    pip install -r requirements-dev.txt
+   virtualenv -p python3 venv
+   source venv/bin/activate
+   pip install -r requirements-dev.txt
 
 ## Testing
 
 The Python operator framework includes a very nice harness for testing
 operator behaviour without full deployment. Just `run_tests`:
 
-    ./run_tests
+   ./run_tests

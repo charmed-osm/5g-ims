@@ -20,25 +20,24 @@
 ##
 ---
 name: hss
-description: Home Subscriber Subsystem  maintains user profile
-             and location details
-summary: HSS is the application used to maintain the user profile
-         and authentication details.Other components in IMS connects
-         with HSS if authentication details needs to be verified.
+summary: hss deploys kamailio developed hss as a microk8s pod
+maintainers:
+    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+description: |
+    Home Subscriber Subsystem(HSS)  maintains user profile and location details.
+    HSS is the application used to fetch the user profile
+    and authentication details.Other components in IMS connects
+    with HSS if authentication details needs to be verified.
 tags:
-  - ims
+    - ims
 series: [kubernetes]
+min-juju-version: 2.8.2
 deployment:
-  type: stateful
-  service: loadbalancer
-resources:
-  image:
-    type: oci-image
-    description: docker image for HSS
-    # upstream-source: "10.45.5.100:4200/canonical/ims_hss:v2.0"
+    type: stateful
+    service: loadbalancer
 provides:
-  hssip:
-    interface: hssip
+    hssip:
+        interface: hssip
 requires:
-  mysql:
-    interface: mysql
+    mysql:
+        interface: mysql

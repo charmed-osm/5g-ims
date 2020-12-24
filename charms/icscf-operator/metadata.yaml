@@ -20,24 +20,24 @@
 ##
 ---
 name: icscf
-description: Interrogating CSCF is the entity that
-             selects the appropriate SCSCF during registration
-summary: This component works in selecting the appropriate SCSCF
-         for the UE during its registration process with the IMS
+summary: icscf deploys the kamailio developed icscf as a microk8s pod
+maintainers:
+    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+description: |
+    Interrogating call session control function (ICSCF) is the entity that
+    selects the appropriate SCSCF during registration
+    This component works in selecting the appropriate SCSCF
+    for the UE during its registration process with the IMS
 tags:
-  - ims
+    - ims
 series: [kubernetes]
+min-juju-version: 2.8.2
 deployment:
-  type: stateful
-  service: cluster
-resources:
-  image:
-    type: oci-image
-    description: docker image for ICSCF
-    # upstream-source: "10.45.5.100:4200/canonical/ims_icscf:v2.0"
+    type: stateful
+    service: cluster
 provides:
-  icscfip:
-    interface: icscfip
+    icscfip:
+        interface: icscfip
 requires:
-  mysql:
-    interface: mysql
+    mysql:
+        interface: mysql

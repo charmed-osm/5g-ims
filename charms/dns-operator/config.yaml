@@ -20,7 +20,13 @@
 ##
 ---
 options:
+    image:
+        type: string
+        description: |
+            Docker image for dns
+        default: localhost:32000/ims_dns:v7.0
     dns_port:
         type: int
-        description: 'dns_port is exposed for custom dns server in ims'
+        description: |
+            dns_port is exposed for custom dns server in ims
         default: 53

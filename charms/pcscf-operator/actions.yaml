@@ -20,16 +20,11 @@
 ##
 ---
 log-level:
-    description: "Changing debug level"
+    description: |
+        Changing debug level
     params:
         debug:
-            description: "debug level change"
-            type: integer
-            default: ""
-debug-level:
-    description: "Changing debug level at day1"
-    params:
-        debug:
-            description: "debug level change"
+            description: |
+                debug level change with values in range 2-5
             type: integer
             default: ""

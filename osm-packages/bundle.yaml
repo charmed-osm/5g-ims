@@ -23,40 +23,23 @@ description: IMS Bundle
 bundle: kubernetes
 applications:
   mysql:
-    charm: './charms/mysql-operator/build'
+    charm: '../charms/mysql-operator/build'
     scale: 1
-    resources:
-      image: 'mysql:5.7'
-
   hss:
-    charm: './charms/hss-operator/build'
+    charm: '../charms/hss-operator/build'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_hss:1.0'
-
   dns:
-    charm: './charms/dns-operator/build'
+    charm: '../charms/dns-operator/build'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_dns:1.0'
-
   icscf:
-    charm: './charms/icscf-operator/build'
+    charm: '../charms/icscf-operator/build'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_icscf:1.0'
-
   pcscf:
-    charm: './charms/pcscf-operator/build'
+    charm: '../charms/pcscf-operator/build'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_pcscf:1.0'
-
   scscf:
-    charm: './charms/scscf-operator/build'
+    charm: '../charms/scscf-operator/build'
     scale: 1
-    resources:
-      image: 'localhost:32000/ims_scscf:1.0'
 
 relations:
   - - mysql:mysql

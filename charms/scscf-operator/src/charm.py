@@ -19,78 +19,47 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" Defining scscf charm events """
+"""Defining scscf charm events"""
 
 import logging
-from typing import NoReturn
-from ops.charm import CharmBase, CharmEvents
+from typing import Any, Dict, NoReturn
+from ops.charm import CharmBase
 from ops.main import main
-from ops.framework import StoredState, EventSource, EventBase
+from ops.framework import StoredState, EventBase
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
-from oci_image import OCIImageResource, OCIImageResourceError
 from pod_spec import make_pod_spec
 
 logger = logging.getLogger(__name__)
 
 
-class ConfigurePodEvent(EventBase):
-    """Configure Pod event"""
-
-
-class PublishScscfEvent(EventBase):
-    """Publish Scscf event"""
-
-
-class ScscfEvents(CharmEvents):
-    """SCSCF Events"""
-
-    configure_pod = EventSource(ConfigurePodEvent)
-    publish_scscf_info = EventSource(PublishScscfEvent)
-
-
 class ScscfCharm(CharmBase):
-    """ scscf charm events class definition """
+    """scscf charm"""
 
     state = StoredState()
-    on = ScscfEvents()
 
     def __init__(self, *args):
+        """SCSCF  charm  constructor."""
         super().__init__(*args)
         # Internal state initialization
         self.state.set_default(pod_spec=None)
 
-        self.image = OCIImageResource(self, "image")
-
         # Registering regular events
         self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.upgrade_charm, self.configure_pod)
-        self.framework.observe(self.on.leader_elected, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.configure_pod)
-
-        # Registering custom internal events
-        self.framework.observe(self.on.configure_pod, self.configure_pod)
-        self.framework.observe(self.on.publish_scscf_info, self.publish_scscf_info)
+        self.framework.observe(self.on.update_status, self.publish_scscf_info)
 
         # Registering required relation changed events
         self.framework.observe(
             self.on.mysql_relation_changed, self._on_mysql_relation_changed
         )
 
-        # Registering required relation changed events
-        # self.framework.observe(
-        #     self.on.scscfip_relation_joined, self._publish_scscf_info
-        # )
-
         # -- initialize states --
-        self.state.set_default(installed=False)
-        self.state.set_default(configured=False)
-        self.state.set_default(started=False)
         self.state.set_default(mysql=None)
+        self.state.set_default(user=None)
+        self.state.set_default(pwd=None)
 
-    def publish_scscf_info(self, event: EventBase) -> NoReturn:
-        """Publishes SCSCF information"""
-        logging.info(event)
+    def publish_scscf_info(self, _=None) -> NoReturn:
+        """Publishes SCSCF information."""
         if not self.unit.is_leader():
             return
 
@@ -99,15 +68,14 @@ class ScscfCharm(CharmBase):
             for i in rel_id2:
                 relation = self.model.get_relation("scscfip", i.id)
                 parameter = str(self.model.get_binding(relation).network.bind_address)
-                logger.info(parameter)
                 if parameter != "None":
-                    relation.data[self.model.app]["parameter"] = parameter
+                    relation.data[self.model.unit]["parameter"] = parameter
                     self.model.unit.status = ActiveStatus(
                         "Parameter sent: {}".format(parameter)
                     )
-        except Exception as err:
+        except TypeError as err:
             logger.error("Error in scscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("Ip could not be obtained")
+            self.unit.status = BlockedStatus("Ip not yet fetched")
             return
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
@@ -120,12 +88,14 @@ class ScscfCharm(CharmBase):
             return
 
         mysql = event.relation.data[event.app].get("hostname")
-        logging.info("SCSCF Requires from MYSQL")
-        logging.info(mysql)
+        user = event.relation.data[event.app].get("mysql_user")
+        pwd = event.relation.data[event.app].get("mysql_pwd")
         if mysql and self.state.mysql != mysql:
             self.state.mysql = mysql
-            self.on.publish_scscf_info.emit()
-            self.on.configure_pod.emit()
+            self.state.user = user
+            self.state.pwd = pwd
+            self.publish_scscf_info()
+            self.configure_pod()
 
     def _missing_relations(self) -> str:
         """Checks if there missing relations.
@@ -137,13 +107,22 @@ class ScscfCharm(CharmBase):
         missing_relations = [k for k, v in data_status.items() if not v]
         return ", ".join(missing_relations)
 
-    def configure_pod(self, event: EventBase) -> NoReturn:
-        """Assemble the pod spec and apply it, if possible.
-        Args:
-            event (EventBase): Hook or Relation event that started the
-                               function.
+    @property
+    def relation_state(self) -> Dict[str, Any]:
+        """Collects relation state configuration for pod spec assembly.
+
+        Returns:
+            Dict[str, Any]: relation state information.
         """
-        logging.info(event)
+        relation_state = {
+            "db": self.state.mysql,
+            "user": self.state.user,
+            "pwd": self.state.pwd,
+        }
+        return relation_state
+
+    def configure_pod(self, _=None) -> NoReturn:
+        """Assemble the pod spec and apply it, if possible."""
         missing = self._missing_relations()
         if missing:
             self.unit.status = BlockedStatus(
@@ -152,25 +131,19 @@ class ScscfCharm(CharmBase):
                 )
             )
             return
-        logging.info("Configure pod")
         if not self.unit.is_leader():
             self.unit.status = ActiveStatus("ready")
             return
         self.unit.status = MaintenanceStatus("Assembling pod spec")
 
         # Fetch image information
-        try:
-            self.unit.status = MaintenanceStatus("Fetching image information")
-            image_info = self.image.fetch()
-        except OCIImageResourceError:
-            self.unit.status = BlockedStatus("Error fetching image information")
-            return
-
+        image_info = self.config["image"]
         try:
             pod_spec = make_pod_spec(
                 image_info,
                 self.model.config,
                 self.model.app.name,
+                self.relation_state,
             )
         except ValueError as exc:
             logger.exception("Config data validation error")
@@ -182,7 +155,7 @@ class ScscfCharm(CharmBase):
             self.state.pod_spec = pod_spec
 
         self.unit.status = ActiveStatus("ready")
-        self.on.publish_scscf_info.emit()
+        self.publish_scscf_info()
 
 
 if __name__ == "__main__":

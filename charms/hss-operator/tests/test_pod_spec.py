@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" test script for pod spec.py """
+"""test script for pod spec.py"""
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -46,38 +46,57 @@ class TestPodSpec(unittest.TestCase):
             },
         ]
         dict_port = {"diameter_port": 3868}
-        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(dict_port)
 
         self.assertListEqual(expected_result, pod_ports)
 
     def test_make_pod_command(self) -> NoReturn:
-        """Testing make pod command"""
+        """Testing make pod command."""
 
         expected_result = ["./init_hss.sh", "&"]
-        # pylint:disable=W0212
         pod_command = pod_spec._make_pod_command()
         self.assertEqual(expected_result, pod_command)
 
     def test_make_pod_envconfig(self) -> NoReturn:
-        """Testing make pod envconfig"""
+        """Testing make pod envconfig."""
 
         expected_result = {
             "MYSQL_HOST": "mysql-endpoints",
             "MYSQL_USER": "root",
             "MYSQL_ROOT_PASSWORD": "root",
         }
-        # pylint:disable=W0212
-        pod_envconfig = pod_spec._make_pod_envconfig()
+        relation_state = {
+            "db": "mysql",
+            "user": "root",
+            "pwd": "root",
+        }
+        pod_envconfig = pod_spec._make_pod_envconfig(relation_state)
         self.assertEqual(expected_result, pod_envconfig)
 
+    def test_validate_config(self) -> NoReturn:
+        """Testing config data exception scenario."""
+        config = {"diameter_port": 1234}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_config(config)
+
+    def test_validate_relation(self) -> NoReturn:
+        """Testing relation data scenario."""
+        relation_state = {"user": "xyz"}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_relation_state(relation_state)
+
     def test_make_pod_spec(self) -> NoReturn:
-        """Teting make pod spec"""
+        """Teting make pod spec."""
         image_info = {"upstream-source": "localhost:32000/ims_hss:1.0"}
         config = {"diameter_port": 3998}
         app_name = "hss"
+        relation_state = {
+            "db": "mysql",
+            "user": "root",
+            "pwd": "root",
+        }
         with self.assertRaises(ValueError):
-            pod_spec.make_pod_spec(image_info, config, app_name)
+            pod_spec.make_pod_spec(image_info, config, app_name, relation_state)
 
 
 if __name__ == "__main__":

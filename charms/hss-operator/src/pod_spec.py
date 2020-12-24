@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" Pod spec for hss charm """
+"""Pod spec for hss charm"""
 
 import logging
 from typing import Any, Dict, List
@@ -27,65 +27,103 @@ from typing import Any, Dict, List
 logger = logging.getLogger(__name__)
 
 HSS_PORT = 8080
+DIAMETER_PORT = 3868
 
 
 def _make_pod_ports(config: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate pod ports details.
+
     Args:
         config Dict[str,Any]: Config details.
+
     Returns:
         List[Dict[str, Any]]: pod port details.
     """
-    if config["diameter_port"] == 3868:
-        return [
-            {
-                "name": "diahss",
-                "containerPort": config["diameter_port"],
-                "protocol": "TCP",
-            },
-            {"name": "hss", "containerPort": HSS_PORT, "protocol": "TCP"},
-        ]
-    raise ValueError("Invalid diameter_port")
+    return [
+        {
+            "name": "diahss",
+            "containerPort": config["diameter_port"],
+            "protocol": "TCP",
+        },
+        {"name": "hss", "containerPort": HSS_PORT, "protocol": "TCP"},
+    ]
 
 
-def _make_pod_envconfig() -> Dict[str, Any]:
+def _make_pod_envconfig(relation_state: Dict[str, Any]) -> Dict[str, Any]:
     """Generate pod environment configuration.
+
+    Args:
+        relation_state(Dict[str, Any]): relation detail.
+
     Returns:
         Dict[str, Any]: pod environment configuration.
     """
-    envconfig = {
+    mysql_db = relation_state["db"]
+    endpoints = f"{mysql_db}-endpoints"
+    return {
         # General configuration
-        "MYSQL_HOST": "mysql-endpoints",
-        "MYSQL_USER": "root",
-        "MYSQL_ROOT_PASSWORD": "root",
+        "MYSQL_HOST": endpoints,
+        "MYSQL_USER": relation_state["user"],
+        "MYSQL_ROOT_PASSWORD": relation_state["pwd"],
     }
-
-    return envconfig
 
 
 def _make_pod_command() -> List[str]:
+    """Generate pod command.
+
+    Returns:
+        List[str]:pod command.
+    """
     return ["./init_hss.sh", "&"]
+
+
+def _validate_config(config: Dict[str, Any]):
+    """validate config data.
+
+    Args:
+        config Dict[str,Any]: Config details.
+    """
+    if config.get("diameter_port") != DIAMETER_PORT:
+        raise ValueError("Invalid hss diameter port")
+
+
+def _validate_relation_state(relation_state: Dict[str, Any]):
+    """Validate relation data.
+
+    Args:
+        relation (Dict[str, Any]): relation state information.
+    """
+    app = relation_state.get("db")
+    user = relation_state.get("user")
+    password = relation_state.get("pwd")
+    if not app or not user.__eq__("root") or not password.__eq__("root"):
+        raise ValueError("Value error in mysql relations")
 
 
 def make_pod_spec(
     image_info: Dict[str, str],
     config: Dict[str, str],
     app_name: str,
+    relation_state: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Generate the pod spec information.
+
     Args:
         image_info (Dict[str, str]): Object provided by
                                      OCIImageResource("image").fetch().
         config (Dict[str, Any]): Configuration information.
         app_name (str, optional): Application name. Defaults to "hss".
+
     Returns:
         Dict[str, Any]: Pod spec dictionary for the charm.
     """
     if not image_info:
         return None
 
+    _validate_config(config)
+    _validate_relation_state(relation_state)
     ports = _make_pod_ports(config)
-    env_config = _make_pod_envconfig()
+    env_config = _make_pod_envconfig(relation_state)
     command = _make_pod_command()
 
     return {
@@ -93,7 +131,7 @@ def make_pod_spec(
         "containers": [
             {
                 "name": app_name,
-                "imageDetails": image_info,
+                "image": image_info,
                 "imagePullPolicy": "Always",
                 "ports": ports,
                 "envConfig": env_config,

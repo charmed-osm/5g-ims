@@ -19,7 +19,7 @@
 # To get in touch with the maintainers, please contact:
 # canonical@tataelxsi.onmicrosoft.com
 ##
-""" test script for pod spec.py """
+"""test script for pod spec.py"""
 from typing import NoReturn
 import unittest
 import pod_spec
@@ -40,23 +40,27 @@ class TestPodSpec(unittest.TestCase):
             },
         ]
         dictport = {"sql_port": 3306}
-        # pylint:disable=W0212
         pod_ports = pod_spec._make_pod_ports(dictport)
 
         self.assertListEqual(expected_result, pod_ports)
 
     def test_make_pod_envconfig(self) -> NoReturn:
-        """Testing make pod envconfig"""
+        """Testing make pod envconfig."""
 
         expected_result = {
             "MYSQL_ROOT_PASSWORD": "root",
         }
-        # pylint:disable=W0212
         pod_envconfig = pod_spec._make_pod_envconfig()
         self.assertEqual(expected_result, pod_envconfig)
 
+    def test_validate_config(self) -> NoReturn:
+        """Testing config data exception scenario."""
+        config = {"sql_port": 1234}
+        with self.assertRaises(ValueError):
+            pod_spec._validate_config(config)
+
     def test_make_pod_spec(self) -> NoReturn:
-        """Teting make pod spec"""
+        """Teting make pod spec."""
         image_info = {"upstream-source": "localhost:32000/mysql:5.7"}
         config = {
             "sql_port": 4567,
