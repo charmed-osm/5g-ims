@@ -75,6 +75,15 @@ def _make_pod_command() -> List[str]:
     return ["./init_icscf.sh", "&"]
 
 
+def _make_startup_probe() -> Dict[str, Any]:
+    """Generate pod startup probe.
+    Returns:
+    Dict[str, Any]: pod startup probe.
+    """
+    privil = {"startupProbe": {"tcpSocket": {"port": 4060}}}
+    return privil
+
+
 def _validate_config(config: Dict[str, Any]):
     """validate config data.
 
@@ -121,6 +130,7 @@ def make_pod_spec(
     _validate_relation_state(relation_state)
     ports = _make_pod_ports(config)
     env_config = _make_pod_envconfig(relation_state)
+    startup_check = _make_startup_probe()
     command = _make_pod_command()
     return {
         "version": 3,
@@ -132,6 +142,7 @@ def make_pod_spec(
                 "ports": ports,
                 "envConfig": env_config,
                 "command": command,
+                "kubernetes": startup_check,
             }
         ],
     }

@@ -23,7 +23,7 @@ options:
     image:
         type: string
         description: |
-            Docker image for RAN
+            Docker image for HSS
         default: localhost:32000/ims_hss:v7.0
     diameter_port:
         type: int

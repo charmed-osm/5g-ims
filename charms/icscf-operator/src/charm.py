@@ -70,9 +70,9 @@ class IcscfCharm(CharmBase):
                 parameter = str(self.model.get_binding(relation).network.bind_address)
                 if parameter != "None":
                     relation.data[self.model.unit]["parameter"] = parameter
-                    self.model.unit.status = ActiveStatus(
-                        "Parameter sent: {}".format(parameter)
-                    )
+                    # self.model.unit.status = ActiveStatus(
+                    #     "Parameter sent: {}".format(parameter)
+                    # )
         except TypeError as err:
             logger.error("Error in icscf relation data: %s", str(err))
             self.unit.status = BlockedStatus("Ip not yet fetched")

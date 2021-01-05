@@ -23,7 +23,7 @@ options:
   image:
     type: string
     description: |
-        Docker image for dns
+        Docker image for mysql
     default: mysql:5.7
   sql_port:
     type: int

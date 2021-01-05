@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2020 Tata Elxsi
 #
 # Licensed under the Apache License, Version 2.0 (the License); you may
@@ -24,4 +24,3 @@
 DEBUG=`action-get debug`
 
 kamcmd cfg.set_now_int core debug $DEBUG
-

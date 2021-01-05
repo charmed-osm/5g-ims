@@ -72,6 +72,7 @@ class TestCharm(unittest.TestCase):
                         "MYSQL_ROOT_PASSWORD": "root",
                     },
                     "command": ["./init_pcscf.sh", "&"],
+                    "kubernetes": {"startupProbe": {"tcpSocket": {"port": 4070}}},
                 }
             ],
             "serviceAccount": {
@@ -132,6 +133,19 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(
             self.harness.charm.unit.status.message.startswith("Waiting for ")
         )
+
+    def test_publish_pcscf_info(self) -> NoReturn:
+        """Test to see if pcscf relation is updated."""
+        expected_result = {
+            "parameter": "127.1.1.1",
+        }
+        self.harness.charm.on.start.emit()
+        relation_id = self.harness.add_relation("pcscfip", "dns")
+        self.harness.add_relation_unit(relation_id, "dns/0")
+        relation_data = {"parameter": "127.1.1.1"}
+        self.harness.update_relation_data(relation_id, "pcscf", relation_data)
+        relation_data = self.harness.get_relation_data(relation_id, "pcscf")
+        self.assertDictEqual(expected_result, relation_data)
 
 
 if __name__ == "__main__":
