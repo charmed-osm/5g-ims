@@ -47,8 +47,10 @@ class PcscfCharm(CharmBase):
         # Registering regular events
         self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.publish_pcscf_info)
 
+        self.framework.observe(
+            self.on.dns_source_relation_joined, self.publish_pcscf_info
+        )
         # Registering required relation changed events
         self.framework.observe(
             self.on.mysql_relation_changed, self._on_mysql_relation_changed
@@ -59,25 +61,15 @@ class PcscfCharm(CharmBase):
         self.state.set_default(user=None)
         self.state.set_default(pwd=None)
 
-    def publish_pcscf_info(self, _=None) -> NoReturn:
+    def publish_pcscf_info(self, event) -> NoReturn:
         """Publishes PCSCF information."""
-        if not self.unit.is_leader():
-            return
+        if self.unit.is_leader():
+            private_address = self.model.get_binding(event.relation).network.bind_address
+            if private_address:
+                event.relation.data[self.app]["private-address"] = str(private_address)
+            else:
+                event.defer()
 
-        try:
-            rel_id2 = self.model.relations.__getitem__("pcscfip")
-            for i in rel_id2:
-                relation = self.model.get_relation("pcscfip", i.id)
-                parameter = str(self.model.get_binding(relation).network.bind_address)
-                if parameter != "None":
-                    relation.data[self.model.unit]["parameter"] = parameter
-                    # self.model.unit.status = ActiveStatus(
-                    #     "Parameter sent: {}".format(parameter)
-                    # )
-        except TypeError as err:
-            logger.error("Error in pcscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("Ip not yet fetched")
-            return
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.
@@ -96,7 +88,6 @@ class PcscfCharm(CharmBase):
             self.state.mysql = mysql
             self.state.user = user
             self.state.pwd = pwd
-            self.publish_pcscf_info()
             self.configure_pod()
 
     def _missing_relations(self) -> str:

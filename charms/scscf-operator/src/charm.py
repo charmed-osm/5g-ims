@@ -46,7 +46,10 @@ class ScscfCharm(CharmBase):
         # Registering regular events
         self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.publish_scscf_info)
+
+        self.framework.observe(
+            self.on.dns_source_relation_joined, self.publish_scscf_info
+        )
 
         # Registering required relation changed events
         self.framework.observe(
@@ -58,25 +61,14 @@ class ScscfCharm(CharmBase):
         self.state.set_default(user=None)
         self.state.set_default(pwd=None)
 
-    def publish_scscf_info(self, _=None) -> NoReturn:
+    def publish_scscf_info(self, event) -> NoReturn:
         """Publishes SCSCF information."""
-        if not self.unit.is_leader():
-            return
-
-        try:
-            rel_id2 = self.model.relations.__getitem__("scscfip")
-            for i in rel_id2:
-                relation = self.model.get_relation("scscfip", i.id)
-                parameter = str(self.model.get_binding(relation).network.bind_address)
-                if parameter != "None":
-                    relation.data[self.model.unit]["parameter"] = parameter
-                    # self.model.unit.status = ActiveStatus(
-                    #     "Parameter sent: {}".format(parameter)
-                    # )
-        except TypeError as err:
-            logger.error("Error in scscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("Ip not yet fetched")
-            return
+        if self.unit.is_leader():
+            private_address = self.model.get_binding(event.relation).network.bind_address
+            if private_address:
+                event.relation.data[self.app]["private-address"] = str(private_address)
+            else:
+                event.defer()
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.
@@ -94,7 +86,6 @@ class ScscfCharm(CharmBase):
             self.state.mysql = mysql
             self.state.user = user
             self.state.pwd = pwd
-            self.publish_scscf_info()
             self.configure_pod()
 
     def _missing_relations(self) -> str:
@@ -155,7 +146,6 @@ class ScscfCharm(CharmBase):
             self.state.pod_spec = pod_spec
 
         self.unit.status = ActiveStatus("ready")
-        self.publish_scscf_info()
 
 
 if __name__ == "__main__":

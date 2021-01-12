@@ -25,7 +25,7 @@ from typing import Any, Dict, NoReturn
 from ops.charm import CharmBase
 from ops.main import main
 from ops.framework import StoredState, EventBase
-from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, Application
 from pod_spec import make_pod_spec
 
 logger = logging.getLogger(__name__)
@@ -43,126 +43,23 @@ class DnsCharm(CharmBase):
         self.state.set_default(pod_spec=None)
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
 
         # Registering required relation changed events
         self.framework.observe(
-            self.on.hssip_relation_changed, self._on_hssip_relation_changed
-        )
-        self.framework.observe(
-            self.on.icscfip_relation_changed, self._on_icscfip_relation_changed
-        )
-        self.framework.observe(
-            self.on.pcscfip_relation_changed, self._on_pcscfip_relation_changed
-        )
-        self.framework.observe(
-            self.on.scscfip_relation_changed, self._on_scscfip_relation_changed
+            self.on.dns_source_relation_changed, self.configure_pod
         )
 
-        # -- initialize states --
-        self.state.set_default(hss=None)
-        self.state.set_default(icscf=None)
-        self.state.set_default(pcscf=None)
-        self.state.set_default(scscf=None)
-
-    def _on_hssip_relation_changed(self, event: EventBase) -> NoReturn:
-        """hss ip relation changed.
-
-        Args:
-            event (EventBase):hss ip relation changed.
-        """
-
-        if event.unit not in event.relation.data:
-            return
-        try:
-            parameter = event.relation.data[event.unit].get("parameter")
-            if parameter and self.state.hss != parameter:
-                self.state.hss = parameter
-                self.configure_pod()
-        except KeyError as err:
-            logger.error("Key error in hss relation data: %s", str(err))
-            self.unit.status = BlockedStatus("hss ip not obtained")
-            return
-
-    def _on_icscfip_relation_changed(self, event: EventBase) -> NoReturn:
-        """icscfip relation changed.
-
-        Args:
-            event (EventBase): icscfip relation changed.
-        """
-        if event.unit not in event.relation.data:
-            return
-        try:
-            parameter = event.relation.data[event.unit].get("parameter")
-            if parameter and self.state.icscf != parameter:
-                self.state.icscf = parameter
-                self.configure_pod()
-        except KeyError as err:
-            logger.error("Key error in icscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("icscf ip not obtained")
-            return
-
-    def _on_pcscfip_relation_changed(self, event: EventBase) -> NoReturn:
-        """pcscf ip relation changed.
-
-        Args:
-            event (EventBase):pcscs ip relation changed.
-        """
-        if event.unit not in event.relation.data:
-            return
-        try:
-            parameter = event.relation.data[event.unit].get("parameter")
-            if parameter and self.state.pcscf != parameter:
-                self.state.pcscf = parameter
-                self.configure_pod()
-        except KeyError as err:
-            logger.error("Key error in pcscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("pcscf ip not obtained")
-            return
-
-    def _on_scscfip_relation_changed(self, event: EventBase) -> NoReturn:
-        """scscf ip relation changed.
-
-        Args:
-            event (EventBase):pcscs ip relation changed.
-        """
-        if event.unit not in event.relation.data:
-            return
-        try:
-            parameter = event.relation.data[event.unit].get("parameter")
-            if parameter and self.state.scscf != parameter:
-                self.state.scscf = parameter
-                self.configure_pod()
-        except KeyError as err:
-            logger.error("Key error in scscf relation data: %s", str(err))
-            self.unit.status = BlockedStatus("scscf ip not obtained")
-            return
-
-    def _missing_relations(self) -> str:
-        """Checks if there missing relations.
-
-        Returns:
-            str: string with missing relations
-        """
-        data_status = {
-            "hss": self.state.hss,
-            "icscf": self.state.icscf,
-            "pcscf": self.state.pcscf,
-            "scscf": self.state.scscf,
-        }
-        missing_relations = [k for k, v in data_status.items() if not v]
-        return ", ".join(missing_relations)
-
-    def combined_ip(self) -> Dict[str, Any]:
-        """ Combined ip relations """
-        ip_addresses = {
-            "hss": self.state.hss,
-            "icscf": self.state.icscf,
-            "pcscf": self.state.pcscf,
-            "scscf": self.state.scscf,
-        }
-        return ip_addresses
+    def get_ips(self):
+        ips = []
+        relations = self.model.relations.__getitem__("dns-source")
+        for relation in relations:
+            for unit_app, data in relation.data.items():
+                if isinstance(unit_app, Application) and unit_app != self.app:
+                    private_address = data.get("private-address")
+                    if private_address:
+                        ips.append(private_address)
+        return ips
 
     def configure_pod(self, _=None) -> NoReturn:
         """Assemble the pod spec and apply it, if possible."""
@@ -179,6 +76,7 @@ class DnsCharm(CharmBase):
             self.unit.status = ActiveStatus("ready")
             return
 
+        hosts = self.get_ips()  # use this as needed 
         self.unit.status = MaintenanceStatus("Assembling pod spec")
         image_info = self.config["image"]
         relation = self.combined_ip()

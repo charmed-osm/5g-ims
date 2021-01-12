@@ -41,7 +41,7 @@ class TestCharm(unittest.TestCase):
 
     def test_on_start_without_relations(self) -> NoReturn:
         """Test installation without any relation."""
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
 
         # Verifying status
         self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
@@ -54,7 +54,7 @@ class TestCharm(unittest.TestCase):
 
     def test_on_start_with_relations(self) -> NoReturn:
         """Test installation without relation."""
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
         expected_result = {
             "version": 3,
             "containers": [
@@ -99,7 +99,7 @@ class TestCharm(unittest.TestCase):
 
     def test_on_mysql_app_relation_changed(self) -> NoReturn:
         """Test to see if mysql app relation is updated."""
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
 
         self.assertIsNone(self.harness.charm.state.mysql)
 
@@ -125,7 +125,7 @@ class TestCharm(unittest.TestCase):
         expected_result = {
             "parameter": "127.1.1.1",
         }
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
         relation_id = self.harness.add_relation("scscfip", "dns")
         self.harness.add_relation_unit(relation_id, "dns/0")
         relation_data = {"parameter": "127.1.1.1"}
