@@ -33,9 +33,9 @@ Contains Juju action log-level used to set log level in ICSCF.
 
 a. Install Charmcraft
 
-   ```bash
-   sudo snap install charmcraft --beta
-   ```
+```bash
+sudo snap install charmcraft --beta
+```
 
 ## Usage
 
@@ -44,10 +44,10 @@ registration process with the IMS
 
 ### Deploy from local repository
 
-   ```bash
-   charmcraft build
-   juju deploy icscf.charm
-   ```
+```bash
+charmcraft build
+juju deploy ./icscf.charm
+```
 
 NOTE: ICSCF can be deployed only after Mysql is up because of relations
 configured between the two.
@@ -60,18 +60,18 @@ COMMAND : sudo juju run-action icscf/< UNIT-ID > log-level debugval=3
 To check the status and output of the action ,use the following command
 
 COMMAND:
-sudo juju show-action-status < ACTION-ID >
-sudo juju show-action-output < ACTION-ID >
+juju show-action-status < ACTION-ID >
+juju show-action-output < ACTION-ID >
 
 Create and activate a virtualenv with the development requirements:
 
-   virtualenv -p python3 venv
-   source venv/bin/activate
-   pip install -r requirements-dev.txt
+virtualenv -p python3 venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
 
 ## Testing
 
 The Python operator framework includes a very nice harness for testing
 operator behaviour without full deployment. Just `run_tests`:
 
-   ./run_tests
+./run_tests

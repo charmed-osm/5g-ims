@@ -20,14 +20,14 @@
 ##
 ---
 options:
-    image:
-        type: string
-        description: |
-            Docker image for icscf
-        default: localhost:32000/ims_icscf:v7.0
-    diameter_port:
-        type: int
-        description: |
-            diameter_port is used for
-            communication between icscf and hss
-        default: 3869
+  image:
+    type: string
+    description: |
+      Docker image for icscf
+    default: localhost:32000/ims_icscf:v7.0
+  diameter_port:
+    type: int
+    description: |
+      diameter_port is used for
+      communication between icscf and hss
+    default: 3869

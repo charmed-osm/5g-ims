@@ -24,22 +24,22 @@ description: IMS Bundle for Functional Testing
 bundle: kubernetes
 applications:
   mysql:
-    charm: '../../charms/mysql-operator/mysql.charm'
+    charm: "../../charms/mysql-operator/mysql.charm"
     scale: 1
   hss:
-    charm: '../../charms/hss-operator/hss.charm'
+    charm: "../../charms/hss-operator/hss.charm"
     scale: 1
   dns:
-    charm: '../../charms/dns-operator/dns.charm'
+    charm: "../../charms/dns-operator/dns.charm"
     scale: 1
   icscf:
-    charm: '../../charms/icscf-operator/icscf.charm'
+    charm: "../../charms/icscf-operator/icscf.charm"
     scale: 1
   pcscf:
-    charm: '../../charms/pcscf-operator/pcscf.charm'
+    charm: "../../charms/pcscf-operator/pcscf.charm"
     scale: 1
   scscf:
-    charm: '../../charms/scscf-operator/scscf.charm'
+    charm: "../../charms/scscf-operator/scscf.charm"
     scale: 1
 
 relations:

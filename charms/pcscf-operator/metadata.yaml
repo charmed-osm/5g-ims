@@ -22,20 +22,20 @@
 name: pcscf
 summary: pcscf deploys kamailio developed pcscf as a microk8s pod
 maintainers:
-    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+  - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
 description: |
-    pcscf-operator charm does the function of proxy-cscf for IMS
-    This stands as the entry and exit to any request to IMS
+  pcscf-operator charm does the function of proxy-cscf for IMS
+  This stands as the entry and exit to any request to IMS
 tags:
-    - ims
+  - ims
 deployment:
-    type: stateful
-    service: loadbalancer
+  type: stateful
+  service: loadbalancer
 series: [kubernetes]
 min-juju-version: 2.8.2
 provides:
-    pcscfip:
-        interface: pcscfip
+  pcscfip:
+    interface: pcscfip
 requires:
-    mysql:
-        interface: mysql
+  mysql:
+    interface: mysql

@@ -41,7 +41,7 @@ class TestCharm(unittest.TestCase):
 
     def test_config_changed(self):
         """Test script for pod spec."""
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
         expected_result = {
             "version": 3,
             "containers": [
@@ -77,7 +77,6 @@ class TestCharm(unittest.TestCase):
             "mysql_user": "root",
             "mysql_pwd": "root",
         }
-        self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "pcscf")
         self.harness.add_relation_unit(relation_id, "pcscf/0")
         relation_data = self.harness.get_relation_data(relation_id, "mysql")
@@ -90,7 +89,6 @@ class TestCharm(unittest.TestCase):
             "mysql_user": "root",
             "mysql_pwd": "root",
         }
-        self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "icscf")
         self.harness.add_relation_unit(relation_id, "icscf/0")
         relation_data = self.harness.get_relation_data(relation_id, "mysql")
@@ -103,7 +101,6 @@ class TestCharm(unittest.TestCase):
             "mysql_user": "root",
             "mysql_pwd": "root",
         }
-        self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "scscf")
         self.harness.add_relation_unit(relation_id, "scscf/0")
         relation_data = self.harness.get_relation_data(relation_id, "mysql")
@@ -116,7 +113,6 @@ class TestCharm(unittest.TestCase):
             "mysql_user": "root",
             "mysql_pwd": "root",
         }
-        self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("mysql", "hss")
         self.harness.add_relation_unit(relation_id, "hss/0")
         relation_data = self.harness.get_relation_data(relation_id, "mysql")

@@ -29,9 +29,9 @@ Database for storing user profile and location data.
 
 a. Install Charmcraft
 
-   ```bash
-   sudo snap install charmcraft --beta
-   ```
+```bash
+sudo snap install charmcraft --beta
+```
 
 ## Usage
 
@@ -40,22 +40,22 @@ connects with mysql to store and retrieve necessary details.
 
 ### Deploy from local repository
 
-   ```bash
-   charmcraft build
-   juju deploy mysql.charm
-   ```
+```bash
+charmcraft build
+juju deploy ./mysql.charm
+```
 
 ## Developing
 
 Create and activate a virtualenv with the development requirements:
 
-   virtualenv -p python3 venv
-   source venv/bin/activate
-   pip install -r requirements-dev.txt
+virtualenv -p python3 venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
 
 ## Testing
 
 The Python operator framework includes a very nice harness for testing
 operator behaviour without full deployment. Just `run_tests`:
 
-   ./run_tests
+./run_tests

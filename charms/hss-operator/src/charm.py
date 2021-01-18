@@ -43,36 +43,34 @@ class HssCharm(CharmBase):
         self.state.set_default(pod_spec=None)
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
-        self.framework.observe(self.on.update_status, self.publish_hss_info)
 
         # Registering required relation changed events
         self.framework.observe(
             self.on.mysql_relation_changed, self._on_mysql_relation_changed
         )
+        self.framework.observe(self.on.hssip_relation_joined, self.publish_hss_info)
 
         # -- initialize states --
         self.state.set_default(mysql=None)
         self.state.set_default(user=None)
         self.state.set_default(pwd=None)
 
-    def publish_hss_info(self, _=None) -> NoReturn:
+    def publish_hss_info(self, event) -> NoReturn:
         """Publishes Hss information."""
         if not self.unit.is_leader():
             return
         try:
-            rel_id2 = self.model.relations.__getitem__("hssip")
-            for i in rel_id2:
-                relation = self.model.get_relation("hssip", i.id)
-                parameter = str(self.model.get_binding(relation).network.bind_address)
-                if parameter != "None":
-                    relation.data[self.model.unit]["parameter"] = parameter
-                    # self.model.unit.status = ActiveStatus(
-                    #     "Parameter sent: {}".format(parameter)
-                    # )
+            parameter = self.model.get_binding(event.relation).network.bind_address
+            logger.info("Hssip")
+            logger.info(str(parameter))
+            if parameter:
+                event.relation.data[self.model.unit]["parameter"] = str(parameter)
+            else:
+                event.defer()
         except TypeError as err:
             logger.error("Error in hss relation data: %s", str(err))
+            event.defer()
             self.unit.status = BlockedStatus("Ip not yet fetched")
             return
 
@@ -92,7 +90,6 @@ class HssCharm(CharmBase):
             self.state.mysql = mysql
             self.state.user = user
             self.state.pwd = pwd
-            self.publish_hss_info()
             self.configure_pod()
 
     def _missing_relations(self) -> str:
@@ -153,7 +150,6 @@ class HssCharm(CharmBase):
             self.state.pod_spec = pod_spec
 
         self.unit.status = ActiveStatus("ready")
-        self.publish_hss_info()
 
 
 if __name__ == "__main__":

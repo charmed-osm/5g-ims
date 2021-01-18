@@ -40,7 +40,7 @@ class TestCharm(unittest.TestCase):
 
     def test_on_start_without_relations(self) -> NoReturn:
         """Test installation without any relation."""
-        self.harness.charm.on.start.emit()
+        self.harness.charm.on.config_changed.emit()
 
         # Verifying status
         self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
@@ -125,7 +125,6 @@ class TestCharm(unittest.TestCase):
         }
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("hssip", "dns")
-        self.harness.add_relation_unit(relation_id, "dns/0")
         relation_data = {"parameter": "127.1.1.1"}
         self.harness.update_relation_data(relation_id, "hss", relation_data)
         relation_data = self.harness.get_relation_data(relation_id, "hss")

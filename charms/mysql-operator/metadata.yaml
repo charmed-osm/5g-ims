@@ -22,18 +22,18 @@
 name: mysql
 summary: mysql deploys the mysql database as a microk8s pod
 maintainers:
-    - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
+  - Tata Elxsi <canonical@tataelxsi.onmicrosoft.com>
 description: |
-    Database for storing user profile and location data.
-    All components in IMS connects with mysql to store and
-    retrieve necessary details.
+  Database for storing user profile and location data.
+  All components in IMS connects with mysql to store and
+  retrieve necessary details.
 tags:
-    - ims
+  - ims
 series: [kubernetes]
 min-juju-version: 2.8.2
 deployment:
-    type: stateful
-    service: cluster
+  type: stateful
+  service: cluster
 provides:
-    mysql:
-        interface: mysql
+  mysql:
+    interface: mysql

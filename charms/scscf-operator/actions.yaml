@@ -20,11 +20,11 @@
 ##
 ---
 log-level:
-    description: |
-        Changing debug level
-    params:
-        debug:
-            description: |
-                debug level change with values in range 2-5
-            type: integer
-            default: ""
+  description: |
+    Changing debug level
+  params:
+    debug:
+      description: |
+        debug level change with values in range 2-5
+      type: integer
+      default: ""

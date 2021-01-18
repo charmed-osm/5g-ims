@@ -20,14 +20,14 @@
 ##
 ---
 options:
-    image:
-        type: string
-        description: |
-            Docker image for SCSCF
-        default: localhost:32000/ims_scscf:v7.0
-    diameter_port:
-        type: int
-        description: |
-            diameter_port used for communication
-            between scscf and hss
-        default: 3870
+  image:
+    type: string
+    description: |
+      Docker image for scscf
+    default: localhost:32000/ims_scscf:v7.0
+  diameter_port:
+    type: int
+    description: |
+      diameter_port used for communication
+      between scscf and hss
+    default: 3870

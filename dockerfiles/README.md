@@ -48,36 +48,32 @@ Component Dockerfiles:
 To build images of all the 5G IMS Components,
 
 ```bash
-
 cd ..
 ./build_docker_images.sh
-
 ```
 
 To push the built images to registry,
 
 ```bash
-
 docker push localhost:32000/ims_pcscf:1.0
 docker push localhost:32000/ims_scscf:1.0
 docker push localhost:32000/ims_icscf:1.0
 docker push localhost:32000/ims_hss:1.0
 docker push localhost:32000/ims_dns:1.0
-
 ```
 
 ## Exposed Ports
 
-----------------------------------------------------------
-|     NF       |   Exposed Ports  | Dependencies         |
-----------------------------------------------------------
-|   pcscf      |      4070        |   mysql              |
-----------------------------------------------------------
-|   icscf      |    4060,3869     |   mysql              |
-----------------------------------------------------------
-|   scscf      |    6060,3870     |   mysql              |
-----------------------------------------------------------
-|    hss       |    8080,3868     |   mysql              |
-----------------------------------------------------------
-|    dns       |       53         |pcscf,icscf,scscf,hss |
-----------------------------------------------------------
+---
+
+## | NF | Exposed Ports | Dependencies |
+
+## | pcscf | 4070 | mysql |
+
+## | icscf | 4060,3869 | mysql |
+
+## | scscf | 6060,3870 | mysql |
+
+## | hss | 8080,3868 | mysql |
+
+## | dns | 53 |pcscf,icscf,scscf,hss |

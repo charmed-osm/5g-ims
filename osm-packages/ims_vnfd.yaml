@@ -15,110 +15,110 @@
 #    under the License.
 ---
 vnfd-catalog:
-    schema-version: "v3.0"
-    vnfd:
-        - id: ims_vnfd
-          name: ims_vnfd
-          short-name: ims_vnfd
-          description: VNF descriptor for IMS
-          vendor: TATA ELXSI
-          version: "2.0"
-          connection-point:
-              - name: mgmtnet
+  schema-version: "v3.0"
+  vnfd:
+    - id: ims_vnfd
+      name: ims_vnfd
+      short-name: ims_vnfd
+      description: VNF descriptor for IMS
+      vendor: TATA ELXSI
+      version: "2.0"
+      connection-point:
+        - name: mgmtnet
 
-          # Management interface
-          mgmt-interface:
-              cp: mgmt
-          kdu:
-              - name: ims-kdu
-                juju-bundle: bundle.yaml
-                kdu-configuration:
-                    initial-config-primitive:
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                value: icscf
-                              - name: debug
-                                data-type: INTEGER
-                                value: 3
-                          seq: '1'
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                value: scscf
-                              - name: debug
-                                data-type: INTEGER
-                                value: 3
-                          seq: '2'
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                value: pcscf
-                              - name: debug
-                                data-type: INTEGER
-                                value: 3
-                          seq: '3'
-                    config-primitive:
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                default-value: pcscf
-                              - name: debug
-                                data-type: INTEGER
-                                default-value: ""
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                default-value: icscf
-                              - name: debug
-                                data-type: INTEGER
-                                default-value: ""
-                        - name: log-level
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                default-value: scscf
-                              - name: debug
-                                data-type: INTEGER
-                                default-value: ""
-                        - name: add-user
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                default-value: hss
-                              - name: user
-                                data-type: STRING
-                                default-value: ""
-                              - name: password
-                                data-type: STRING
-                                default-value: ""
-                              - name: domain
-                                data-type: STRING
-                                default-value: ""
-                              - name: implicit
-                                data-type: INTEGER
-                                default-value: ""
-                        - name: delete-user
-                          parameter:
-                              - data-type: STRING
-                                name: application-name
-                                default-value: hss
-                              - name: user
-                                data-type: STRING
-                                default-value: ""
-                              - name: password
-                                data-type: STRING
-                                default-value: ""
-                              - name: domain
-                                data-type: STRING
-                                default-value: ""
+      # Management interface
+      mgmt-interface:
+        cp: mgmt
+      kdu:
+        - name: ims-kdu
+          juju-bundle: bundle.yaml
+          kdu-configuration:
+            initial-config-primitive:
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    value: icscf
+                  - name: debug
+                    data-type: INTEGER
+                    value: 3
+                seq: "1"
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    value: scscf
+                  - name: debug
+                    data-type: INTEGER
+                    value: 3
+                seq: "2"
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    value: pcscf
+                  - name: debug
+                    data-type: INTEGER
+                    value: 3
+                seq: "3"
+            config-primitive:
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    default-value: pcscf
+                  - name: debug
+                    data-type: INTEGER
+                    default-value: ""
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    default-value: icscf
+                  - name: debug
+                    data-type: INTEGER
+                    default-value: ""
+              - name: log-level
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    default-value: scscf
+                  - name: debug
+                    data-type: INTEGER
+                    default-value: ""
+              - name: add-user
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    default-value: hss
+                  - name: user
+                    data-type: STRING
+                    default-value: ""
+                  - name: password
+                    data-type: STRING
+                    default-value: ""
+                  - name: domain
+                    data-type: STRING
+                    default-value: ""
+                  - name: implicit
+                    data-type: INTEGER
+                    default-value: ""
+              - name: delete-user
+                parameter:
+                  - data-type: STRING
+                    name: application-name
+                    default-value: hss
+                  - name: user
+                    data-type: STRING
+                    default-value: ""
+                  - name: password
+                    data-type: STRING
+                    default-value: ""
+                  - name: domain
+                    data-type: STRING
+                    default-value: ""
 
-          k8s-cluster:
-              nets:
-                  - id: mgmtnet
-                    external-connection-point-ref: mgmt
+      k8s-cluster:
+        nets:
+          - id: mgmtnet
+            external-connection-point-ref: mgmt

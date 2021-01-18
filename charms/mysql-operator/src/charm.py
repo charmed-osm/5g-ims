@@ -44,7 +44,6 @@ class MysqlCharm(CharmBase):
         self.state.set_default(pod_spec=None)
 
         # Registering regular events
-        self.framework.observe(self.on.start, self.configure_pod)
         self.framework.observe(self.on.config_changed, self.configure_pod)
 
         # Registering required relation changed events

@@ -26,15 +26,16 @@ Copyright 2020 Tata Elxsi
 
   run ./build_charms.sh
 
-    The charms will be built, build and .charm can be located
-    in respective operators inside charms directory.
-Eg: build and dns.charm in 5g-ims/charms/dns-operator,
-    similarly in all charms it can be found.
+      The charms will be built, build and .charm can be located
+      in respective operators inside charms directory.
+
+  Eg: build and dns.charm in 5g-ims/charms/dns-operator,
+  similarly in all charms it can be found.
 
 # Create and Onboard 5g-ims osm packages
 
 > To create osm vnf and ns packages, use the following commands which will
-generate a vnf package structure named ims_vnf and ns package structure named ims_ns
+> generate a vnf package structure named ims_vnf and ns package structure named ims_ns
 
 ```bash
 osm package-create vnf ims
@@ -126,7 +127,7 @@ osm ns-create --ns_name ims --nsd_name ims_nsd --vim_account <vim_name>
 ```
 
 > ns-create will instantiate the ims network service,
-use "vim_name" thats added to osm.
+> use "vim_name" thats added to osm.
 
 ## Verifying the services
 
@@ -135,7 +136,7 @@ osm ns-list
 ```
 
 > Will display the ns-created with ns-id, with status active and configured
-which means the service is up along with its day1 operations.
+> which means the service is up along with its day1 operations.
 
 ```bash
 osm ns-show
@@ -185,7 +186,7 @@ where
 * Parameters values to be used are as follows,a user and
   password to be added to ims,domain is the default domain available in ims,
   implicit id should be given as unique per user.
-> To delete user from ims
+  > To delete user from ims
 
 ```
 osm ns-action ims --vnf_name 1 --kdu_name ims-kdu --action_name delete-user --params
@@ -195,7 +196,7 @@ osm ns-action ims --vnf_name 1 --kdu_name ims-kdu --action_name delete-user --pa
 where
 
 * "ims" refers to the network service name,"1" points to vnf member index
-   and "ims-kdu" is the kdu name used in package.
+  and "ims-kdu" is the kdu name used in package.
 
 * Parameters values to be used are as follows,
   a user and password to be deleted from ims,
@@ -215,6 +216,6 @@ osm ns-action ims --vnf_name 1 --kdu_name ims-kdu
 where
 
 * "ims" refers to the network service name,"1" points to vnf member index
-   and "ims-kdu" is the kdu name used in package.
+  and "ims-kdu" is the kdu name used in package.
 
 * Parameters values to be used are as follows,debug whose value can range from 2-5.

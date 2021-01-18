@@ -15,29 +15,29 @@
 #    under the License.
 ---
 nsd-catalog:
-    schema-version: "v3.0"
-    nsd:
-        - id: ims_nsd
-          name: ims_nsd
-          short-name: ims_nsd
-          vendor: TATA ELXSI
-          description: NS descriptor for IMS
-          version: "2.0"
+  schema-version: "v3.0"
+  nsd:
+    - id: ims_nsd
+      name: ims_nsd
+      short-name: ims_nsd
+      vendor: TATA ELXSI
+      description: NS descriptor for IMS
+      version: "2.0"
 
-          # Specify the VNFDs that are part of this NSD
-          constituent-vnfd:
-              - member-vnf-index: "1"
-                vnfd-id-ref: ims_vnfd
+      # Specify the VNFDs that are part of this NSD
+      constituent-vnfd:
+        - member-vnf-index: "1"
+          vnfd-id-ref: ims_vnfd
 
-          # Networks for the VNFs
-          vld:
-              - id: mgmtnet
-                name: mgmtnet
-                short-name: mgmtnet
-                type: ELAN
-                mgmt-network: true
-                vim-network-name: public
-                vnfd-connection-point-ref:
-                    - member-vnf-index-ref: "1"
-                      vnfd-id-ref: ims_vnfd
-                      vnfd-connection-point-ref: mgmtnet
+      # Networks for the VNFs
+      vld:
+        - id: mgmtnet
+          name: mgmtnet
+          short-name: mgmtnet
+          type: ELAN
+          mgmt-network: true
+          vim-network-name: public
+          vnfd-connection-point-ref:
+            - member-vnf-index-ref: "1"
+              vnfd-id-ref: ims_vnfd
+              vnfd-connection-point-ref: mgmtnet

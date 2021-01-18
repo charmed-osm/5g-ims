@@ -23,10 +23,10 @@ options:
   image:
     type: string
     description: |
-        Docker image for mysql
+      Docker image for mysql
     default: mysql:5.7
   sql_port:
     type: int
     description: |
-        sql_port is used for exposing db application
+      sql_port is used for exposing db application
     default: 3306
