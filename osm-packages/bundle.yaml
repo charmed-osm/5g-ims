@@ -50,11 +50,11 @@ relations:
     - scscf:mysql
   - - mysql:mysql
     - icscf:mysql
-  - - hss:hssip
-    - dns:hssip
-  - - icscf:icscfip
-    - dns:icscfip
-  - - pcscf:pcscfip
-    - dns:pcscfip
-  - - scscf:scscfip
-    - dns:scscfip
+  - - hss:dns-source
+    - dns:dns-source
+  - - icscf:dns-source
+    - dns:dns-source
+  - - pcscf:dns-source
+    - dns:dns-source
+  - - scscf:dns-source
+    - dns:dns-source

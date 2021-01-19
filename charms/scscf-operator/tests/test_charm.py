@@ -121,12 +121,13 @@ class TestCharm(unittest.TestCase):
     def test_publish_scscf_info(self) -> NoReturn:
         """Test to see if scscf relation is updated."""
         expected_result = {
-            "parameter": "127.1.1.1",
+            "private-address": "127.1.1.1",
+            "hostname": "scscf"
         }
-        relation_id = self.harness.add_relation("scscfip", "dns")
-        relation_data = {"parameter": "127.1.1.1"}
-        self.harness.update_relation_data(relation_id, "scscf", relation_data)
-        relation_data = self.harness.get_relation_data(relation_id, "scscf")
+        relation_id = self.harness.add_relation("dns-source", "dns_source")
+        relation_data = {"private-address": "127.1.1.1", "hostname": "scscf"}
+        self.harness.update_relation_data(relation_id, "dns_source", relation_data)
+        relation_data = self.harness.get_relation_data(relation_id, "dns_source")
         self.assertDictEqual(expected_result, relation_data)
 
 

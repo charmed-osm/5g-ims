@@ -49,30 +49,34 @@ class HssCharm(CharmBase):
         self.framework.observe(
             self.on.mysql_relation_changed, self._on_mysql_relation_changed
         )
-        self.framework.observe(self.on.hssip_relation_joined, self.publish_hss_info)
+        self.framework.observe(
+            self.on.dns_source_relation_joined, self.publish_hss_info
+        )
 
         # -- initialize states --
         self.state.set_default(mysql=None)
         self.state.set_default(user=None)
         self.state.set_default(pwd=None)
 
-    def publish_hss_info(self, event) -> NoReturn:
+    def publish_hss_info(self, event: EventBase) -> NoReturn:
         """Publishes Hss information."""
-        if not self.unit.is_leader():
-            return
-        try:
-            parameter = self.model.get_binding(event.relation).network.bind_address
-            logger.info("Hssip")
-            logger.info(str(parameter))
-            if parameter:
-                event.relation.data[self.model.unit]["parameter"] = str(parameter)
-            else:
+        if self.unit.is_leader():
+            try:
+                private_address = self.model.get_binding(
+                    event.relation
+                ).network.bind_address
+                if private_address:
+                    event.relation.data[self.app]["private-address"] = str(
+                        private_address
+                    )
+                    event.relation.data[self.app]["hostname"] = self.app.name
+                else:
+                    event.defer()
+            except TypeError as err:
+                logger.error("Error in hss relation data: %s", str(err))
                 event.defer()
-        except TypeError as err:
-            logger.error("Error in hss relation data: %s", str(err))
-            event.defer()
-            self.unit.status = BlockedStatus("Ip not yet fetched")
-            return
+                self.unit.status = BlockedStatus("Ip not yet fetched")
+                return
 
     def _on_mysql_relation_changed(self, event: EventBase) -> NoReturn:
         """Reads information about the MYSQL relation.

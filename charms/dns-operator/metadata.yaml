@@ -34,11 +34,5 @@ deployment:
   type: stateful
   service: cluster
 requires:
-  hssip:
-    interface: hssip
-  icscfip:
-    interface: icscfip
-  pcscfip:
-    interface: pcscfip
-  scscfip:
-    interface: scscfip
+  dns-source:
+    interface: dns-source

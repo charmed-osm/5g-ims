@@ -34,8 +34,8 @@ deployment:
 series: [kubernetes]
 min-juju-version: 2.8.2
 provides:
-  pcscfip:
-    interface: pcscfip
+  dns-source:
+    interface: dns-source
 requires:
   mysql:
     interface: mysql

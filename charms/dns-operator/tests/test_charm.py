@@ -54,6 +54,7 @@ class TestCharm(unittest.TestCase):
 
     def test_on_start_with_relations(self) -> NoReturn:
         """Test installation with any relation."""
+        self.harness.charm.on.config_changed.emit()
         expected_result = {
             "version": 3,
             "containers": [
@@ -90,31 +91,39 @@ class TestCharm(unittest.TestCase):
         self.assertIsNone(self.harness.charm.state.hss)
 
         # Initializing pcscf relation
-        pcscf_relation_id = self.harness.add_relation("pcscfip", "pcscfip")
-        self.harness.add_relation_unit(pcscf_relation_id, "pcscfip/0")
+        pcscf_relation_id = self.harness.add_relation("dns-source", "dns_source")
+        self.harness.add_relation_unit(pcscf_relation_id, "dns_source/0")
         self.harness.update_relation_data(
-            pcscf_relation_id, "pcscfip/0", {"parameter": "10.45.30.27"}
+            pcscf_relation_id,
+            "dns_source",
+            {"private-address": "10.45.30.27", "hostname": "pcscf"},
         )
 
         # Initializing icscf relation
-        icscf_relation_id = self.harness.add_relation("icscfip", "icscfip")
-        self.harness.add_relation_unit(icscf_relation_id, "icscfip/0")
+        icscf_relation_id = self.harness.add_relation("dns-source", "dns_source")
+        self.harness.add_relation_unit(icscf_relation_id, "dns_source/0")
         self.harness.update_relation_data(
-            icscf_relation_id, "icscfip/0", {"parameter": "10.45.30.28"}
+            icscf_relation_id,
+            "dns_source",
+            {"private-address": "10.45.30.28", "hostname": "icscf"},
         )
 
         # Initializing scscf relation
-        scscf_relation_id = self.harness.add_relation("scscfip", "scscfip")
-        self.harness.add_relation_unit(scscf_relation_id, "scscfip/0")
+        scscf_relation_id = self.harness.add_relation("dns-source", "dns_source")
+        self.harness.add_relation_unit(scscf_relation_id, "dns_source/0")
         self.harness.update_relation_data(
-            scscf_relation_id, "scscfip/0", {"parameter": "10.45.30.29"}
+            scscf_relation_id,
+            "dns_source",
+            {"private-address": "10.45.30.29", "hostname": "scscf"},
         )
 
         # Initializing hss relation
-        hss_relation_id = self.harness.add_relation("hssip", "hssip")
-        self.harness.add_relation_unit(hss_relation_id, "hssip/0")
+        hss_relation_id = self.harness.add_relation("dns-source", "dns_source")
+        self.harness.add_relation_unit(hss_relation_id, "dns_source/0")
         self.harness.update_relation_data(
-            hss_relation_id, "hssip/0", {"parameter": "10.45.30.30"}
+            hss_relation_id,
+            "dns_source",
+            {"private-address": "10.45.30.30", "hostname": "hss"},
         )
 
         # Checking if nrf data is stored
@@ -132,86 +141,6 @@ class TestCharm(unittest.TestCase):
         # Verifying status message
         self.assertGreater(len(self.harness.charm.unit.status.message), 0)
         self.assertFalse(
-            self.harness.charm.unit.status.message.startswith("Waiting for ")
-        )
-
-    def test_on_pcscf_app_relation_changed(self) -> NoReturn:
-        """Test to see if pcscf app relation is updated."""
-
-        self.assertIsNone(self.harness.charm.state.pcscf)
-
-        relation_id = self.harness.add_relation("pcscfip", "pcscfip")
-        self.harness.add_relation_unit(relation_id, "pcscfip/0")
-        self.harness.update_relation_data(
-            relation_id, "pcscfip/0", {"parameter": "10.45.30.27"}
-        )
-
-        # Verifying status
-        self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
-
-        # Verifying status message
-        self.assertGreater(len(self.harness.charm.unit.status.message), 0)
-        self.assertTrue(
-            self.harness.charm.unit.status.message.startswith("Waiting for ")
-        )
-
-    def test_on_icscf_app_relation_changed(self) -> NoReturn:
-        """Test to see if icscf app relation is updated."""
-
-        self.assertIsNone(self.harness.charm.state.pcscf)
-
-        relation_id = self.harness.add_relation("icscfip", "icscfip")
-        self.harness.add_relation_unit(relation_id, "icscfip/0")
-        self.harness.update_relation_data(
-            relation_id, "icscfip/0", {"parameter": "10.45.30.28"}
-        )
-
-        # Verifying status
-        self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
-
-        # Verifying status message
-        self.assertGreater(len(self.harness.charm.unit.status.message), 0)
-        self.assertTrue(
-            self.harness.charm.unit.status.message.startswith("Waiting for ")
-        )
-
-    def test_on_scscf_app_relation_changed(self) -> NoReturn:
-        """Test to see if scscf app relation is updated."""
-
-        self.assertIsNone(self.harness.charm.state.pcscf)
-
-        relation_id = self.harness.add_relation("scscfip", "scscfip")
-        self.harness.add_relation_unit(relation_id, "scscfip/0")
-        self.harness.update_relation_data(
-            relation_id, "scscfip/0", {"parameter": "10.45.30.29"}
-        )
-
-        # Verifying status
-        self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
-
-        # Verifying status message
-        self.assertGreater(len(self.harness.charm.unit.status.message), 0)
-        self.assertTrue(
-            self.harness.charm.unit.status.message.startswith("Waiting for ")
-        )
-
-    def test_on_hss_app_relation_changed(self) -> NoReturn:
-        """Test to see if hss app relation is updated."""
-
-        self.assertIsNone(self.harness.charm.state.pcscf)
-
-        relation_id = self.harness.add_relation("hssip", "hssip")
-        self.harness.add_relation_unit(relation_id, "hssip/0")
-        self.harness.update_relation_data(
-            relation_id, "hssip/0", {"parameter": "10.45.30.30"}
-        )
-
-        # Verifying status
-        self.assertIsInstance(self.harness.charm.unit.status, BlockedStatus)
-
-        # Verifying status message
-        self.assertGreater(len(self.harness.charm.unit.status.message), 0)
-        self.assertTrue(
             self.harness.charm.unit.status.message.startswith("Waiting for ")
         )
 

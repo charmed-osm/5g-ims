@@ -38,8 +38,8 @@ deployment:
   type: stateful
   service: cluster
 provides:
-  scscfip:
-    interface: scscfip
+  dns-source:
+    interface: dns-source
 requires:
   mysql:
     interface: mysql

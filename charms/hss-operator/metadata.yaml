@@ -36,8 +36,8 @@ deployment:
   type: stateful
   service: loadbalancer
 provides:
-  hssip:
-    interface: hssip
+  dns-source:
+    interface: dns-source
 requires:
   mysql:
     interface: mysql
