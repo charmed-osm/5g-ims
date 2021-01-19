@@ -1,2 +1,2 @@
 [TYPECHECK]
-generated-members=mysql_relation_changed
+generated-members=mysql_relation_changed,dns_source_relation_joined

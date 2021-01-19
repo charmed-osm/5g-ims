@@ -120,10 +120,7 @@ class TestCharm(unittest.TestCase):
 
     def test_publish_hss_info(self) -> NoReturn:
         """Test to see if hss relation is updated."""
-        expected_result = {
-            "private-address": "127.1.1.1",
-            "hostname": "hss"
-        }
+        expected_result = {"private-address": "127.1.1.1", "hostname": "hss"}
         self.harness.charm.on.start.emit()
         relation_id = self.harness.add_relation("dns-source", "dns_source")
         relation_data = {"private-address": "127.1.1.1", "hostname": "hss"}

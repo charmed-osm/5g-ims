@@ -1,2 +1,2 @@
 [TYPECHECK]
-generated-members=hssip_relation_changed,icscfip_relation_changed,pcscfip_relation_changed,scscfip_relation_changed
+generated-members=dns_source_relation_changed
