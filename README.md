@@ -72,12 +72,6 @@ juju bootstrap microk8s
 
 ### Deploy
 
-To deploy 5G IMS from Charmstore, use the following command
-
-```bash
-juju deploy cs:~tata-charmers/ims
-```
-
 #### Deploy from local repository
 
 a. Clone the 5G-IMS repository
