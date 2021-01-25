@@ -59,7 +59,11 @@ b. Enable the following required addons for Microk8s to deploy 5G IMS
 microk8s.enable storage dns
 microk8s.enable multus
 microk8s.enable rbac
+microk8s.enable metallb
 ```
+
+NOTE: 5G IMS requires 2 loadbalancer IP addresses mandatorily. So allocate 2
+IP addresses while enabling metallb.
 
 #### B. Install Juju
 
@@ -82,7 +86,7 @@ cd 5g-ims/
 ```
 
 b. Enable Microk8s registry for storing images
-
+ 
 ```bash
 microk8s.enable registry
 ```
@@ -130,6 +134,32 @@ juju add-model 5g-ims
 juju deploy ./bundle.yaml
 ```
 
+h. Editing coredns,
+
+```bash
+microk8s.kubectl edit cm -n kube-system coredns
+```
+
+Add the following content in to coredns,
+
+```bash
+mnc001.mcc001.3gppnetwork.org:53 {
+errors
+cache 30
+forward . <ims_dns_service_ip>
+}
+```
+
+where ims_dns_service_ip is the Cluster service IP of DNS application.
+
+To check logs in coredns,
+
+```bash
+microk8s.kubectl logs --namespace=kube-system -l k8s-app=kube-dns
+```
+
+Once the changes are updated successfully, “Reloading complete” can be seen in the logs.
+
 ### Integration
 
 5G IMS exposes its following services as loadbalancer services in order to
@@ -145,7 +175,66 @@ and published. This is done using,
 microk8s.enable metallb
 ```
 
-NOTE: 5G IMS requires 2 loadbalancer IP addresses mandatorily.
+NOTE: 5G IMS requires 2 loadbalancer IP addresses mandatorily. Ignore this
+step if already done in pre-requisites.
+
+#### Juju Actions:
+
+a. Action "add-user" is used to add users to ims,
+
+```bash
+juju run-action hss/<unit-id> add-user user=jack password=jack domain=mnc001.mcc001.3gppnetwork.org implicit=3
+```
+
+Where unit-id is the unit number, user and password can be given to be added to
+ims, domain is the default domain available in ims, implicit id should be given
+as unique per user.
+
+b. Action "log-level", is used to change the log-levels. Debug-values can be
+given from 2-5,
+
+```bash
+juju run-action pcscf/<unit-id> log-level debug=3
+juju run-action scscf/<unit-id> log-level debug=3
+juju run-action icscf/<unit-id> log-level debug=3
+```
+
+Where unit-id is the unit number of the respective unit and debug is the log
+level that has to be set for PCSCF, SCSCF and ICSCF respectively.
+
+After executing each action, an ID will be generated like below,
+Action queued with id: "ID"
+This ID can be used to check the action status using the following command,
+
+```bash
+juju show-action-output <ID>
+```
+
+Check for the status of the action in the output which should be "completed".
+
+#### Actions Verification
+
+a. Action "log-level" can be verified in ICSCF, SCSCF and PCSCF as follows,
+
+Login to PCSCF/SCSCF/ICSCF pod, open the kamailio_pcscf.log or
+kamailio_scscf.log or kamailio_pcscf.log file and check for the following line,
+
+> “core.debug has been changed to 3"
+
+Verify that the log-level given from action and the log level shown in the
+above line are the same.
+
+b. Action “add-user” can be verified in MySQL application with the following,
+
+Login to Mysql pod and execute the following commands,
+
+```bash
+mysql -u root -p root
+use hss_db;
+select * from impi;
+```
+
+Verify that the users added from actions are listed in the impi table.
 
 ### 5G Scenarios
 
@@ -153,8 +242,8 @@ NOTE: 5G IMS requires 2 loadbalancer IP addresses mandatorily.
 
 After 5G-Core(https://github.com/charmed-osm/5g-core) and
 5G-RAN(https://github.com/charmed-osm/5g-ran) are deployed and
-configured, the user registration can be triggered through the following rest
-API call with POST method,
+actions are completed, the user registration can be triggered through the
+following rest API call with POST method,
 
 ```bash
 http://ran-loadbalancerip:8081/attachtrigger/1
@@ -202,8 +291,9 @@ nc -u -l -p <any unused port>
 Voice traffic flow can be tested once
 5G-Core(https://github.com/charmed-osm/5g-core),
 5G-RAN(https://github.com/charmed-osm/5g-ran) and 5G-IMS are deployed and
-configured. To test voice traffic flows, a SIP client called PJSIP is already
-installed in the UE application. Follow the below steps,
+actions are completed. To test voice traffic flows, a SIP client called PJSIP is
+already installed in the UE application. Follow the below steps in UE
+application,
 
 a. Traverse to /pjproject directory in the UE pod.
 

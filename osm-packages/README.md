@@ -160,12 +160,16 @@ microk8s.kubectl edit cm -n kube-system coredns
 mnc001.mcc001.3gppnetwork.org:53 {
        errors
        cache 30
-       forward . <ims dns service_ip>
+       forward . <ims_dns_service_ip>
     }
+
+where ims_dns_service_ip is the Cluster service IP of DNS application.
 
 To check logs  in coredns:
 microk8s.kubectl logs --namespace=kube-system -l k8s-app=kube-dns
 ```
+
+Once the changes are updated successfully, “Reloading complete” can be seen in the logs.
 
 ## 5g-ims day2 operation
 
@@ -219,3 +223,5 @@ where
   and "ims-kdu" is the kdu name used in package.
 
 * Parameters values to be used are as follows,debug whose value can range from 2-5.
+
+Note: [Test 5G-Scenarios](../README.md)
