@@ -24,7 +24,7 @@ options:
     type: string
     description: |
       Docker image for scscf
-    default: localhost:32000/ims_scscf:v7.0
+    default: localhost:32000/ims_scscf:1.0
   diameter_port:
     type: int
     description: |

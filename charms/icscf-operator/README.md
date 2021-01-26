@@ -55,13 +55,10 @@ configured between the two.
 ## Developing
 
 To test log-level action,run the following command
-COMMAND : sudo juju run-action icscf/< UNIT-ID > log-level debugval=3
 
-To check the status and output of the action ,use the following command
-
-COMMAND:
-juju show-action-status < ACTION-ID >
-juju show-action-output < ACTION-ID >
+```bash
+juju run-action icscf/0 log-level debugval=3 --wait
+```
 
 Create and activate a virtualenv with the development requirements:
 

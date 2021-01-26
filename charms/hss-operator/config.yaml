@@ -24,7 +24,7 @@ options:
     type: string
     description: |
       Docker image for hss
-    default: localhost:32000/ims_hss:v7.0
+    default: localhost:32000/ims_hss:1.0
   diameter_port:
     type: int
     description: |

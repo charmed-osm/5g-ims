@@ -24,7 +24,7 @@ options:
     type: string
     description: |
       Docker image for icscf
-    default: localhost:32000/ims_icscf:v7.0
+    default: localhost:32000/ims_icscf:1.0
   diameter_port:
     type: int
     description: |

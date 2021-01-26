@@ -100,26 +100,12 @@ c. Build 5G IMS images
 d. Push built images to registry
 
 ```bash
-docker push localhost:32000/ims_pcscf:1.0
-docker push localhost:32000/ims_scscf:1.0
-docker push localhost:32000/ims_icscf:1.0
-docker push localhost:32000/ims_hss:1.0
-docker push localhost:32000/ims_dns:1.0
+sudo docker push localhost:32000/ims_pcscf:1.0
+sudo docker push localhost:32000/ims_scscf:1.0
+sudo docker push localhost:32000/ims_icscf:1.0
+sudo docker push localhost:32000/ims_hss:1.0
+sudo docker push localhost:32000/ims_dns:1.0
 ```
-
-e. Check image reference in IMS charms
-
-The following steps have to performed in all IMS charms to ensure that the
-charms have the right image reference. The following is an example to check in
-pcscf-operator charm.
-
-```bash
-//open config.yaml file
-vi charms/pcscf-operator/config.yaml
-```
-
-Ensure that the image referred in the config.yaml is same as the one
-pushed in last step.
 
 f. Execute the following script to build all the 5G IMS charms using Charmcraft,
 
@@ -130,7 +116,7 @@ f. Execute the following script to build all the 5G IMS charms using Charmcraft,
 g. Create a model in Juju and deploy 5G IMS,
 
 ```bash
-juju add-model 5g-ims
+juju add-model ims
 juju deploy ./bundle.yaml
 ```
 
@@ -183,7 +169,7 @@ step if already done in pre-requisites.
 a. Action "add-user" is used to add users to ims,
 
 ```bash
-juju run-action hss/<unit-id> add-user user=jack password=jack domain=mnc001.mcc001.3gppnetwork.org implicit=3
+juju run-action hss/0 add-user user=jack password=jack domain=mnc001.mcc001.3gppnetwork.org implicit=3 --wait
 ```
 
 Where unit-id is the unit number, user and password can be given to be added to
@@ -194,37 +180,19 @@ b. Action "log-level", is used to change the log-levels. Debug-values can be
 given from 2-5,
 
 ```bash
-juju run-action pcscf/<unit-id> log-level debug=3
-juju run-action scscf/<unit-id> log-level debug=3
-juju run-action icscf/<unit-id> log-level debug=3
+juju run-action pcscf/0 log-level debug=3 --wait
+juju run-action scscf/0 log-level debug=3 --wait
+juju run-action icscf/0 log-level debug=3 --wait
 ```
 
 Where unit-id is the unit number of the respective unit and debug is the log
 level that has to be set for PCSCF, SCSCF and ICSCF respectively.
 
-After executing each action, an ID will be generated like below,
-Action queued with id: "ID"
-This ID can be used to check the action status using the following command,
-
-```bash
-juju show-action-output <ID>
-```
-
 Check for the status of the action in the output which should be "completed".
 
 #### Actions Verification
 
-a. Action "log-level" can be verified in ICSCF, SCSCF and PCSCF as follows,
-
-Login to PCSCF/SCSCF/ICSCF pod, open the kamailio_pcscf.log or
-kamailio_scscf.log or kamailio_pcscf.log file and check for the following line,
-
-> “core.debug has been changed to 3"
-
-Verify that the log-level given from action and the log level shown in the
-above line are the same.
-
-b. Action “add-user” can be verified in MySQL application with the following,
+a. Action “add-user” can be verified in MySQL application with the following,
 
 Login to Mysql pod and execute the following commands,
 
@@ -235,6 +203,16 @@ select * from impi;
 ```
 
 Verify that the users added from actions are listed in the impi table.
+
+b. Action "log-level" can be verified in ICSCF, SCSCF and PCSCF as follows,
+
+Login to PCSCF/SCSCF/ICSCF pod, open the kamailio_pcscf.log or
+kamailio_scscf.log or kamailio_pcscf.log file and check for the following line,
+
+> “core.debug has been changed to 3"
+
+Verify that the log-level given from action and the log level shown in the
+above line are the same.
 
 ### 5G Scenarios
 
@@ -318,7 +296,8 @@ pjsua --config-file alice.cfg --log-level=3
 ```
 
 Note: Peform the above steps to register another user say bob with IMS so that SIP calls
-can be tested between the two users.
+can be tested between the two users. This has to be done in another UE pod. You can scale the
+ue charm in RAN, enter to the pod, and in the alice.cfg file, replace "alice" with "bob".
 
 e. After registration of both users, press ‘m’ from UE application's alice
 and then press enter to initiate a SIP call.

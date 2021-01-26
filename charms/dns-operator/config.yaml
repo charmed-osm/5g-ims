@@ -24,7 +24,7 @@ options:
     type: string
     description: |
       Docker image for dns
-    default: localhost:32000/ims_dns:v7.0
+    default: localhost:32000/ims_dns:1.0
   dns_port:
     type: int
     description: |

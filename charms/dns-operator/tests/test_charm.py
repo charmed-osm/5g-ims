@@ -60,7 +60,7 @@ class TestCharm(unittest.TestCase):
             "containers": [
                 {
                     "name": "dns",
-                    "image": "localhost:32000/ims_dns:v7.0",
+                    "image": "localhost:32000/ims_dns:1.0",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {

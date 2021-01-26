@@ -55,18 +55,14 @@ between the two.
 ## Developing
 
 To test add-user action,run the following command
-COMMAND : sudo juju run-action hss/< UNIT-ID > add-user user=jack password=jack
-domain=mnc001.mcc001.3gppnetwork.org implicit=3
+
+```bash
+juju run-action hss/0 add-user user=jack password=jack domain=mnc001.mcc001.3gppnetwork.org implicit=3 --wait
+```
 
 Parameters values to be used are as follows,
 user and password to be added to ims, domain is the default domain available in
 ims and implicit id should be given as unique per user.
-
-To check the status and output of the action ,use the following command
-
-COMMAND:
-juju show-action-status < ACTION-ID >
-juju show-action-output < ACTION-ID >
 
 Create and activate a virtualenv with the development requirements:
 
@@ -80,3 +76,4 @@ The Python operator framework includes a very nice harness for testing
 operator behaviour without full deployment. Just `run_tests`:
 
 ./run_tests
+ests

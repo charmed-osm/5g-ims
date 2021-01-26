@@ -59,7 +59,7 @@ class TestCharm(unittest.TestCase):
             "containers": [
                 {
                     "name": "hss",
-                    "image": "localhost:32000/ims_hss:v7.0",
+                    "image": "localhost:32000/ims_hss:1.0",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {"name": "diahss", "containerPort": 3868, "protocol": "TCP"},

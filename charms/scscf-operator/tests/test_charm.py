@@ -59,7 +59,7 @@ class TestCharm(unittest.TestCase):
             "containers": [
                 {
                     "name": "scscf",
-                    "image": "localhost:32000/ims_scscf:v7.0",
+                    "image": "localhost:32000/ims_scscf:1.0",
                     "imagePullPolicy": "Always",
                     "ports": [
                         {"name": "diascscf", "containerPort": 3870, "protocol": "TCP"},
